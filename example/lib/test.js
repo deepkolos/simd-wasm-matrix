@@ -25,9 +25,9 @@ export const test = (name, cb) => {
     errorIndex = -1;
     const promise = Promise.resolve(cb()).then(() => {
       console.log(
-        `test: ${name} ${pass ? '√' : `×[${errorIndex}]`} (${(
-          performance.now() - t
-        ).toFixed(2)}ms)`,
+        `test: ${name} ${pass ? '√' : `×[${errorIndex}]`} (${(performance.now() - t).toFixed(
+          2,
+        )}ms)`,
       );
     });
     return promise;
@@ -40,10 +40,7 @@ export const expect = inputValue => {
     toBe(targetValue) {
       function unpass(index) {
         console.log(`${currTestName}[${myExpectIndex}]inputValue:`, inputValue);
-        console.log(
-          `${currTestName}[${myExpectIndex}]targetValue:`,
-          targetValue,
-        );
+        console.log(`${currTestName}[${myExpectIndex}]targetValue:`, targetValue);
         pass = false;
         if (errorIndex === -1) errorIndex = index;
       }
@@ -51,6 +48,18 @@ export const expect = inputValue => {
       if (isArray(targetValue)) {
         if (!arrayEqual(targetValue, inputValue)) unpass(myExpectIndex);
       } else if (targetValue !== inputValue) unpass(myExpectIndex);
+    },
+    notToBe(targetValue) {
+      function unpass(index) {
+        console.log(`${currTestName}[${myExpectIndex}]inputValue:`, inputValue);
+        console.log(`${currTestName}[${myExpectIndex}]targetValue:`, targetValue);
+        pass = false;
+        if (errorIndex === -1) errorIndex = index;
+      }
+
+      if (isArray(targetValue)) {
+        if (arrayEqual(targetValue, inputValue)) unpass(myExpectIndex);
+      } else if (targetValue === inputValue) unpass(myExpectIndex);
     },
   };
 };

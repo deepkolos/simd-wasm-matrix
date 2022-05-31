@@ -2,6 +2,7 @@ interface WasmExports {
   matrix4_multiply(left: number, right: number, out: number): void;
   matrix4_determinant(ptr: number): number;
   matrix4_invert(ptr: number): void;
+  matrix4_invert_transform(ptr: number): void;
   matrix4_transpose(ptr: number): void;
   memory: WebAssembly.Memory;
   __data_end: WebAssembly.Global;
@@ -42,11 +43,14 @@ export async function init({ wasm = '', simdWasm = '' } = {}): Promise<void> {
   if (window.FinalizationRegistry) storeDataInWasm = true;
   try {
     instanceSource = await WebAssembly.instantiateStreaming(fetch(simdWasm));
+    console.info('using simd');
+  } catch (error) {
+    instanceSource = await WebAssembly.instantiateStreaming(fetch(wasm));
+    console.info('using none simd');
+  } finally {
     wasmExports = instanceSource.instance.exports as unknown as WasmExports;
     wasmMemory = wasmExports.memory;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
-  } catch (error) {
-    console.log(error);
   }
 }
 

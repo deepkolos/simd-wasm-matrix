@@ -28,11 +28,14 @@ async function init({ wasm = '', simdWasm = '' } = {}) {
   if (window.FinalizationRegistry) storeDataInWasm = true;
   try {
     instanceSource = await WebAssembly.instantiateStreaming(fetch(simdWasm));
+    console.info('using simd');
+  } catch (error) {
+    instanceSource = await WebAssembly.instantiateStreaming(fetch(wasm));
+    console.info('using none simd');
+  } finally {
     wasmExports = instanceSource.instance.exports ;
     wasmMemory = wasmExports.memory;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
-  } catch (error) {
-    console.log(error);
   }
 }
 
@@ -132,6 +135,10 @@ class Matrix4 {
   }
   invert() {
     wasmExports.matrix4_invert(this.ptr);
+    return this;
+  }
+  invertTransform() {
+    wasmExports.matrix4_invert_transform(this.ptr);
     return this;
   }
 

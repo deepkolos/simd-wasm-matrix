@@ -37,6 +37,10 @@ export class Matrix4 {
     wasmExports.matrix4_invert(this.ptr);
     return this;
   }
+  invertTransform(): this {
+    wasmExports.matrix4_invert_transform(this.ptr);
+    return this;
+  }
 
   // --------- getter setter ---------
 

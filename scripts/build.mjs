@@ -34,16 +34,20 @@ async function compileSIMD() {
 }
 
 async function build() {
-  const startBuildTime = performance.now();
-  await Promise.all([compile(), compileSIMD()]);
-  console.log(`build cost: ${(performance.now() - startBuildTime).toFixed(2)}ms`);
+  try {
+    const startBuildTime = performance.now();
+    await Promise.all([compile(), compileSIMD()]);
+    console.log(`build cost: ${(performance.now() - startBuildTime).toFixed(2)}ms`);
+  } catch (error) {
+    console.log(`build fail`);
+  }
 }
+
+await build();
 
 if (watchMode) {
   const watcher = chokidar.watch(srcPath, { ignored: /^\.ts/ });
   watcher.on('change', build);
-} else {
-  await build();
 }
 
 /** 生成 compile_commands.json */

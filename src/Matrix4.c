@@ -297,6 +297,10 @@ void matrix4_transpose(v128_t a[4]) {
   a[3] = wasm_i32x4_shuffle(tmp2, tmp3, 2, 3, 6, 7);
 }
 
+void matrix4_invert_transform(float a[16]) {
+  // TODO
+}
+
 #else
 
 // -------------- Matrix4 --------------
@@ -433,6 +437,55 @@ void matrix4_invert(float a[16]) {
   a[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
   a[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
   a[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+}
+
+void matrix4_invert_transform(float a[16]) {
+  // 旋转3x3矩阵转置
+  float tmp;
+  // clang-format off
+  tmp = a[1]; a[1] = a[4]; a[4] = tmp;
+  tmp = a[2]; a[2] = a[8]; a[8] = tmp;
+  tmp = a[6]; a[6] = a[9]; a[9] = tmp;
+
+  // scale转置
+  float squareSize[3] = {a[0] * a[0] + a[4] * a[4] + a[8]  * a[8],
+                         a[1] * a[1] + a[5] * a[5] + a[9]  * a[9],
+                         a[2] * a[2] + a[6] * a[6] + a[10] * a[10]};
+  float rSquareSize[3] = {squareSize[0] == 0 ? 1 : 1 / squareSize[0], 
+                          squareSize[1] == 0 ? 1 : 1 / squareSize[1],
+                          squareSize[2] == 0 ? 1 : 1 / squareSize[2]};
+  // clang-format on
+  a[0] *= rSquareSize[0];
+  a[1] *= rSquareSize[1];
+  a[2] *= rSquareSize[2];
+
+  a[4] *= rSquareSize[0];
+  a[5] *= rSquareSize[1];
+  a[6] *= rSquareSize[2];
+
+  a[8] *= rSquareSize[0];
+  a[9] *= rSquareSize[1];
+  a[10] *= rSquareSize[2];
+
+  float Tx = a[12];
+  float Ty = a[13];
+  float Tz = a[14];
+
+  a[12] = -(a[0] * Tx + a[4] * Ty + a[8] * Tz);
+  a[13] = -(a[1] * Tx + a[5] * Ty + a[9] * Tz);
+  a[14] = -(a[2] * Tx + a[6] * Ty + a[10] * Tz);
+}
+
+void matrix4_transpose(float a[16]) {
+  float tmp;
+  // clang-format off
+  tmp = a[1];  a[1]  = a[4];  a[4]  = tmp; 
+  tmp = a[2];  a[2]  = a[8];  a[8]  = tmp; 
+  tmp = a[6];  a[6]  = a[9];  a[9]  = tmp; 
+  tmp = a[3];  a[3]  = a[12]; a[12] = tmp; 
+  tmp = a[7];  a[7]  = a[13]; a[13] = tmp; 
+  tmp = a[11]; a[11] = a[14]; a[14] = tmp;
+  // clang-format on
 }
 
 #endif
