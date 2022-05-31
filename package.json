@@ -1,0 +1,29 @@
+{
+  "name": "simd-wasm-matrix",
+  "version": "1.0.0",
+  "description": "一个有 simd 加速和自动 GC 的 matrix 数学库",
+  "main": "index.js",
+  "scripts": {
+    "srv": "http-server .",
+    "dev:ts": "rollup -cw",
+    "dev:cpp": "zx scripts/build.mjs -w",
+    "b:cpp": "zx scripts/build.mjs",
+    "b:ts": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "wasm",
+    "simd",
+    "matrix"
+  ],
+  "author": "DeepKolos<deepkolos@qq.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-sucrase": "^4.0.4",
+    "chokidar": "^3.5.3",
+    "http-server": "^14.1.0",
+    "rollup": "^2.75.0",
+    "zx": "^6.1.0"
+  }
+}
