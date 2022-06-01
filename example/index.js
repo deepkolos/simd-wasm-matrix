@@ -48,22 +48,22 @@ test('Matrix4.multiply', () => {
     18710,
   ]);
 
-  const mat4A_GLM = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
-  const mat4B_GLM = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
-  const mat4A_GLMWasm = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
-  const mat4B_GLMWasm = GLMWasm.Matrix4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
+  // const mat4A_GLM = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+  // const mat4B_GLM = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
+  // const mat4A_GLMWasm = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+  // const mat4B_GLMWasm = GLMWasm.Matrix4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
 
-  benchmark({
-    'simd-wasm-matrix'() {
-      mat4A.multiply(mat4B);
-    },
-    'gl-matrix'() {
-      GLM.mat4.multiply(mat4A_GLM, mat4A_GLM, mat4B_GLM);
-    },
-    'gl-matrix-wasm'() {
-      GLMWasm.Matrix4.multiply(mat4A_GLMWasm, mat4A_GLMWasm, mat4B_GLMWasm);
-    },
-  });
+  // benchmark({
+  //   'simd-wasm-matrix'() {
+  //     mat4A.multiply(mat4B);
+  //   },
+  //   'gl-matrix'() {
+  //     GLM.mat4.multiply(mat4A_GLM, mat4A_GLM, mat4B_GLM);
+  //   },
+  //   'gl-matrix-wasm'() {
+  //     GLMWasm.Matrix4.multiply(mat4A_GLMWasm, mat4A_GLMWasm, mat4B_GLMWasm);
+  //   },
+  // });
 });
 
 test('Matrix4.premultiply', () => {
@@ -112,12 +112,13 @@ test('Matrix4.invert', () => {
   const mat4B = new Matrix4();
   mat4A.set(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
   mat4B.set(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+
   mat4A.invert();
   expect(mat4A.elements).toBe([
-    0.04736842215061188, 0.03684210777282715, 0.24561403691768646, -0.11403509229421616,
-    0.10000000149011612, 0.07894737273454666, -1.1052632331848145, 0.7894737124443054,
-    -0.1473684310913086, -0.11578947305679321, 0.44736844301223755, -0.15789474546909332,
-    0.12631578743457794, 0.14210526645183563, -0.1315789520740509, 0.05263157933950424,
+    0.062068965286016464, -0.07586206495761871, 0.25287356972694397, -0.08045977354049683,
+    0.1310344785451889, 0.062068965286016464, -0.8735632300376892, 0.4597701132297516,
+    -0.19310344755649567, 0.013793103396892548, 0.28735631704330444, -0.04597701132297516,
+    0.16551724076271057, 0.1310344785451889, -0.10344827175140381, -0.10344827175140381,
   ]);
 
   mat4A.invert();
@@ -128,7 +129,7 @@ test('Matrix4.invert', () => {
 
 const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix'];
 const nodes = names.map(i => $(`log-${i}`));
-let loopCount = 100;
+let loopCount = 10000;
 
 // const GLMWasmRegister = new FinalizationRegistry(ptr => {
 //   GLMWasm.freeMatrix4(ptr);
@@ -219,17 +220,11 @@ const benchmarks = {
       GLM.mat4.invert(m20, m20);
     },
   },
-  // invertTransform: {
-  //   [names[0]]() {
-  //     m00.invertTransform();
-  //   },
-  //   [names[1]]() {
-  //     GLMWasm.Matrix4.invert(m10, m10);
-  //   },
-  //   [names[2]]() {
-  //     GLM.mat4.invert(m10, m10);
-  //   },
-  // },
+  invertTransform: {
+    [names[0]]() {
+      m00.invertTransform();
+    },
+  },
   transpose: {
     [names[0]]() {
       m00.transpose();
@@ -256,11 +251,9 @@ function bench() {
   // 更新UI
   Object.keys(logs).forEach((methodName, i) => {
     const result = logs[methodName];
-    Object.keys(result).forEach(name => {
-      const index = names.indexOf(name);
+    names.forEach((name, index) => {
       const $log = nodes[index];
-
-      $log.children[i].innerText = result[name].toFixed(2) + 'ms';
+      $log.children[i].innerText = result[name] !== undefined ? result[name].toFixed(2) + 'ms' : 'NaN';
     });
   });
 }

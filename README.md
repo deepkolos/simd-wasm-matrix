@@ -13,6 +13,10 @@
 
 ## 性能
 
+需关闭devtools测试
+
+## 体积
+
 | name             | version | js(min) | wasm | simd wasm | size |
 | ---------------- | ------- | ------- | ---- | --------- | ---- |
 | simd-wasm-matrix | dev     |         |      |           |      |

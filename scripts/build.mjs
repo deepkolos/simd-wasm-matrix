@@ -28,9 +28,9 @@ async function compile() {
 
 async function compileSIMD() {
   $.verbose = true;
-  await $`clang ${flags} -o ${`dist/${basename}.wasm`} ${sourcesPath} `;
+  await $`clang ${flags} -o ${`dist/${basename}.simd.wasm`} ${sourcesPath} `;
   $.verbose = false;
-  await $`wasm-opt dist/${basename}.wasm --print -S -o dist/${basename}.wat`;
+  await $`wasm-opt dist/${basename}.wasm --print -S -o dist/${basename}.simd.wat`;
 }
 
 async function build() {
