@@ -944,6 +944,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return Matrix3;
     }());
     exports.Matrix3 = Matrix3;
+    exports.freeMatrix4 = freeMatrix4;
+
     function freeMatrix4(ptr) {
         wasm.__wbg_matrix4_free(ptr);
     }

@@ -1,13 +1,26 @@
 import sucrase from '@rollup/plugin-sucrase';
 import resolve from '@rollup/plugin-node-resolve';
+import { terser } from 'rollup-plugin-terser';
 
-// const production = !process.env.ROLLUP_WATCH;
+// const prod = !process.env.ROLLUP_WATCH;
 
-export default {
-  input: './src/index.ts',
-  output: {
-    format: 'esm',
-    file: 'dist/index.esm.js',
+const plugins = [resolve(), sucrase({ transforms: ['typescript'] })];
+
+export default [
+  {
+    input: './src/index.ts',
+    output: {
+      format: 'esm',
+      file: 'dist/index.esm.js',
+    },
+    plugins,
   },
-  plugins: [resolve(), sucrase({ transforms: ['typescript'] })],
-};
+  {
+    input: './src/index.ts',
+    output: {
+      format: 'esm',
+      file: 'dist/index.esm.min.js',
+    },
+    plugins: [...plugins, terser()],
+  },
+];

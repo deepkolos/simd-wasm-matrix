@@ -1,6 +1,7 @@
 let instanceSource;
 let wasmExports;
 let wasmMemory;
+let wasmMemoryBuffer;
 let storeDataInWasm = false;
 
 /**
@@ -23,6 +24,7 @@ const sortedAllocatedSizeIndex = new Map([
 ]);
 const freedMemory = new Map();
 const allocatedMemory = new Map();
+let lastGrow = 8;
 
 async function init({ wasm = '', simdWasm = '' } = {}) {
   if (window.FinalizationRegistry) storeDataInWasm = true;
@@ -35,6 +37,7 @@ async function init({ wasm = '', simdWasm = '' } = {}) {
   } finally {
     wasmExports = instanceSource.instance.exports ;
     wasmMemory = wasmExports.memory;
+    wasmMemoryBuffer = wasmMemory.buffer;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
   }
 }
@@ -54,7 +57,7 @@ function malloc(size) {
   const maxSizeIndex = sortedAllocatedSizeArray.length;
   if (freedMemory.size) {
     // 找合适的被释放的内存区块
-    let sizeIndex = sortedAllocatedSizeIndex[size];
+    let sizeIndex = sortedAllocatedSizeIndex.get(size);
     let freedSizeArray = freedMemory.get(sortedAllocatedSizeArray[sizeIndex]);
     while (sizeIndex < maxSizeIndex && (!freedSizeArray || !freedSizeArray.length)) {
       sizeIndex++;
@@ -72,7 +75,8 @@ function malloc(size) {
 
   // 检测tail是否可分配
   if (allocedMemoryTailPointer + size > wasmMemory.buffer.byteLength) {
-    wasmMemory.grow(8);
+    wasmMemory.grow(lastGrow *= 2);
+    wasmMemoryBuffer = wasmMemory.buffer;
   }
 
   ptr = allocedMemoryTailPointer;
@@ -93,12 +97,8 @@ function free(ptr) {
 
 const wasmRegistry = new FinalizationRegistry((ptr) => {
   free(ptr);
-  console.log('free ptr', ptr);
+  // console.log('free ptr', ptr);
 });
-
-function registerDispose(obj, ptr) {
-  wasmRegistry.register(obj, ptr);
-}
 
 class Matrix4 {
   
@@ -106,9 +106,9 @@ class Matrix4 {
 
   constructor() {
     this.ptr = malloc(16 * 4);
-    this._elements = new Float32Array(wasmMemory.buffer, this.ptr, 16);
+    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
     this.identity();
-    registerDispose(this, this.ptr);
+    wasmRegistry.register(this, this.ptr);
   }
 
   // --------- operation ---------
@@ -146,7 +146,7 @@ class Matrix4 {
 
   get elements() {
     if (!this._elements.length) {
-      this._elements = new Float32Array(wasmMemory.buffer, this.ptr, 16);
+      this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
     }
     return this._elements;
   }
@@ -195,6 +195,12 @@ class Matrix4 {
     for (let i = 0; i < 16; i++) te[i] = array[i + offset];
     return this;
   }
+
+  // 支持手动提前释放
+  dispose() {
+    wasmRegistry.unregister(this);
+    free(this.ptr);
+  }
 }
 
-export { Matrix4, free, init, instanceSource, malloc, registerDispose, storeDataInWasm, wasmExports, wasmMemory };
+export { Matrix4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };

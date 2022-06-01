@@ -67,7 +67,7 @@ export const expect = inputValue => {
 /**
  * @param {{[name: string]: () => void | Promise<void>}} obj
  */
-export const benchmark = (obj, loopCount = 100000, postfix = '') => {
+export const benchmark = (obj, loopCount = 100000, postfix = '', log = true) => {
   /**
    * @type {{[name: string]: number}}
    */
@@ -83,12 +83,15 @@ export const benchmark = (obj, loopCount = 100000, postfix = '') => {
 
   const min = Math.min(...Object.values(result));
 
-  Object.keys(obj).forEach(async key => {
+  Object.keys(obj).forEach(key => {
     const ms = result[key].toFixed(2);
     const ratio = (result[key] / min).toFixed(3);
     resultFormatted[key] = `${ms}ms (x${ratio})`;
   });
 
-  console.log(`\n${currTestName}_benchmark_${loopCount}${postfix}:`);
-  console.table(resultFormatted);
+  if (log) {
+    console.log(`\n${currTestName}_benchmark_${loopCount}${postfix}:`);
+    console.table(resultFormatted);
+  }
+  return result;
 };

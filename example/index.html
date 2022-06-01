@@ -5,8 +5,160 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>simd-wasm-matrix</title>
+    <style>
+      body {
+        --c1: #6e976b;
+        --c2: rgb(66 136 152);
+        --c3: rgb(143 86 147);
+      }
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      .blk {
+        margin: 10px;
+        padding: 10px;
+        color: white;
+      }
+      .title {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: white;
+        background-color: rgb(75, 176, 173);
+        text-decoration: none;
+      }
+      .title svg {
+        filter: invert(1);
+        margin: 0 5px;
+      }
+      .control-bar {
+        display: flex;
+        background-color: rgb(102, 130, 169);
+      }
+      .control-bar .btn-can {
+        display: flex;
+        flex-grow: 0;
+        flex-shrink: 1;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .control-bar .btn {
+        margin: 0 5px;
+        background-color: cadetblue;
+        padding: 5px 10px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color ease 0.3s;
+      }
+      .control-bar .btn.active {
+        background-color: rgb(89, 186, 189);
+      }
+
+      .btn-desc {
+        flex-grow: 1;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        margin-left: 5px;
+      }
+
+      .info-can {
+        background-color: rgba(100, 131, 66, 0.654);
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .info-item {
+        padding: 5px 10px;
+        flex-grow: 1;
+        flex-shrink: 0;
+        flex-basis: 0;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .info-item:nth-child(1) {
+        background-color: var(--c1);
+      }
+      .info-item:nth-child(2) {
+        background-color: var(--c2);
+      }
+      .info-item:nth-child(3) {
+        background-color: var(--c3);
+      }
+
+      .log-can {
+        display: flex;
+        padding: 0;
+      }
+      .log-item {
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 0;
+      }
+      .log-item > div {
+        padding: 15px;
+      }
+      .log-item:nth-child(1) {
+        background-color: #00bcd4;
+      }
+      .log-item:nth-child(2) {
+        background-color: var(--c1);
+      }
+      .log-item:nth-child(3) {
+        background-color: var(--c2);
+      }
+      .log-item:nth-child(4) {
+        background-color: var(--c3);
+      }
+    </style>
   </head>
   <body>
+    <div id="app">
+      <a class="title blk" href="https://github.com/deepkolos/simd-wasm-matrix">
+        <svg
+          height="29"
+          viewBox="0 0 16 16"
+          version="1.1"
+          width="32"
+          aria-hidden="true"
+          class="octicon octicon-mark-github icon-github"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+          ></path>
+        </svg>
+        simd-wasm-matrix
+      </a>
+
+      <div class="control-bar blk">
+        <div class="btn-desc">循环次数:</div>
+        <div class="btn-can" id="btn-can">
+          <div class="btn active">10^2</div>
+          <div class="btn">10^3</div>
+          <div class="btn">10^4</div>
+          <div class="btn">10^5</div>
+          <div class="btn">10^6</div>
+        </div>
+      </div>
+
+      <div class="info-can blk">
+        <div class="info-item">simd-wasm-matrix@dev</div>
+        <div class="info-item">gl-matrix-wasm@0.8.0</div>
+        <div class="info-item">gl-matrix@3.4.3</div>
+      </div>
+
+      <div class="log-can blk">
+        <div class="log-item" id="log-name"></div>
+        <div class="log-item" id="log-simd-wasm-matrix"></div>
+        <div class="log-item" id="log-gl-matrix-wasm"></div>
+        <div class="log-item" id="log-gl-matrix"></div>
+      </div>
+    </div>
+
     <script src="./lib/gl_matrix_wasm.js"></script>
     <script type="module" src="./index.js"></script>
   </body>

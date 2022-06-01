@@ -1,11 +1,14 @@
 import { benchmark, expect, test } from './lib/test.js';
 import { init, Matrix4 } from '../dist/index.esm.js';
+import { $ } from './lib/dom.js';
 import * as GLM from '../node_modules/gl-matrix/esm/index.js';
 
 const { glMatrixWasm: GLMWasm } = window;
 
 await GLMWasm.init();
 await init({ wasm: '../dist/matrix.wasm', simdWasm: '../dist/matrix.simd.wasm' });
+
+//#region tests
 
 // prettier-ignore
 test('Matrix4.set', () => {
@@ -49,7 +52,7 @@ test('Matrix4.multiply', () => {
   const mat4B_GLM = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
   const mat4A_GLMWasm = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
   const mat4B_GLMWasm = GLMWasm.Matrix4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
-  
+
   benchmark({
     'simd-wasm-matrix'() {
       mat4A.multiply(mat4B);
@@ -120,3 +123,173 @@ test('Matrix4.invert', () => {
   mat4A.invert();
   expect(mat4A.elements).toBe(mat4B.elements);
 });
+
+//#endregion
+
+const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix'];
+const nodes = names.map(i => $(`log-${i}`));
+let loopCount = 100;
+
+// const GLMWasmRegister = new FinalizationRegistry(ptr => {
+//   GLMWasm.freeMatrix4(ptr);
+// });
+const m00 = new Matrix4();
+const m01 = new Matrix4();
+const m02 = new Matrix4();
+const m10 = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+const m11 = GLMWasm.Matrix4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
+const m12 = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+const m20 = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+const m21 = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
+const m22 = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+
+const benchmarks = {
+  // instancing: {
+  //   [names[0]]() {
+  //     const mat4 = new Matrix4();
+  //     mat4.dispose();
+  //   },
+  //   [names[1]]() {
+  //     const mat4 = GLMWasm.Matrix4.create();
+  //     mat4.free();
+  //     // GLMWasmRegister.register(mat4, mat4.ptr);
+  //   },
+  //   [names[2]]() {
+  //     const mat4 = GLM.mat4.create();
+  //   },
+  // },
+  // instancing100: {
+  //   [names[0]]() {
+  //     const array = [];
+  //     for (let i = 0; i < 100; i++) {
+  //       array.push(new Matrix4());
+  //     }
+
+  //     for (let i = 0; i < 100; i++) {
+  //       array[i].dispose();
+  //     }
+  //   },
+  //   [names[1]]() {
+  //     const array = [];
+  //     for (let i = 0; i < 100; i++) {
+  //       array.push(GLMWasm.Matrix4.create());
+  //     }
+
+  //     for (let i = 0; i < 100; i++) {
+  //       array[i].free();
+  //     }
+  //   },
+  //   [names[2]]() {
+  //     const array = [];
+  //     for (let i = 0; i < 100; i++) {
+  //       array.push(GLM.mat4.create());
+  //     }
+  //   },
+  // },
+  multiply: {
+    [names[0]]() {
+      m02.multiplyMatrices(m00, m01);
+    },
+    [names[1]]() {
+      GLMWasm.Matrix4.multiply(m12, m10, m11);
+    },
+    [names[2]]() {
+      GLM.mat4.multiply(m22, m20, m21);
+    },
+  },
+  determinant: {
+    [names[0]]() {
+      m00.determinant();
+    },
+    [names[1]]() {
+      GLMWasm.Matrix4.determinant(m10);
+    },
+    [names[2]]() {
+      GLM.mat4.determinant(m20);
+    },
+  },
+  invert: {
+    [names[0]]() {
+      m00.invert();
+    },
+    [names[1]]() {
+      GLMWasm.Matrix4.invert(m10, m10);
+    },
+    [names[2]]() {
+      GLM.mat4.invert(m20, m20);
+    },
+  },
+  // invertTransform: {
+  //   [names[0]]() {
+  //     m00.invertTransform();
+  //   },
+  //   [names[1]]() {
+  //     GLMWasm.Matrix4.invert(m10, m10);
+  //   },
+  //   [names[2]]() {
+  //     GLM.mat4.invert(m10, m10);
+  //   },
+  // },
+  transpose: {
+    [names[0]]() {
+      m00.transpose();
+    },
+    [names[1]]() {
+      GLMWasm.Matrix4.transpose(m10, m10);
+    },
+    [names[2]]() {
+      GLM.mat4.transpose(m20, m20);
+    },
+  },
+};
+
+function bench() {
+  const logs = {};
+  // loopCount变更下次生效
+  const currentLoopCount = loopCount;
+  Object.keys(benchmarks).forEach(fnName => {
+    const runCfg = benchmarks[fnName];
+    const result = benchmark(runCfg, currentLoopCount, '', false);
+    logs[fnName] = result;
+  });
+
+  // 更新UI
+  Object.keys(logs).forEach((methodName, i) => {
+    const result = logs[methodName];
+    Object.keys(result).forEach(name => {
+      const index = names.indexOf(name);
+      const $log = nodes[index];
+
+      $log.children[i].innerText = result[name].toFixed(2) + 'ms';
+    });
+  });
+}
+
+function initUI() {
+  const $btnCan = $('btn-can');
+  const $logName = $('log-name');
+  const btns = [...$btnCan.children];
+  btns.forEach(btn => {
+    btn.onclick = () => {
+      loopCount = 10 ** parseInt(btn.innerText.replace('10^', ''), 10);
+      $btnCan.getElementsByClassName('active')[0]?.classList.remove('active');
+      btn.classList.add('active');
+    };
+  });
+
+  Object.keys(benchmarks).forEach(name => {
+    const $div = document.createElement('div');
+    $div.innerText = name;
+    $logName.appendChild($div);
+
+    nodes.forEach($log => {
+      const $div = document.createElement('div');
+      $div.dataset.name = name;
+      $log.appendChild($div);
+    });
+  });
+}
+
+initUI();
+bench();
+setInterval(bench, 3000);

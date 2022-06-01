@@ -50,7 +50,7 @@ if (watchMode) {
   watcher.on('change', build);
 }
 
-/** 生成 compile_commands.json */
+/** 生成 compile_commands.json 给cpp插件用 */
 
 const compile_commands = sources.map(file => {
   return {

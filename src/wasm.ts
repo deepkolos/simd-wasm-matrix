@@ -16,6 +16,7 @@ interface WasmExports {
 export let instanceSource: WebAssembly.WebAssemblyInstantiatedSource;
 export let wasmExports: WasmExports;
 export let wasmMemory: WebAssembly.Memory;
+export let wasmMemoryBuffer: ArrayBuffer;
 export let storeDataInWasm = false;
 
 /**
@@ -38,6 +39,7 @@ const sortedAllocatedSizeIndex = new Map<number, number>([
 ]);
 const freedMemory = new Map<number, Array<number>>();
 const allocatedMemory = new Map<number, number>();
+let lastGrow = 8;
 
 export async function init({ wasm = '', simdWasm = '' } = {}): Promise<void> {
   if (window.FinalizationRegistry) storeDataInWasm = true;
@@ -50,6 +52,7 @@ export async function init({ wasm = '', simdWasm = '' } = {}): Promise<void> {
   } finally {
     wasmExports = instanceSource.instance.exports as unknown as WasmExports;
     wasmMemory = wasmExports.memory;
+    wasmMemoryBuffer = wasmMemory.buffer;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
   }
 }
@@ -69,7 +72,7 @@ export function malloc(size: number): number {
   const maxSizeIndex = sortedAllocatedSizeArray.length;
   if (freedMemory.size) {
     // 找合适的被释放的内存区块
-    let sizeIndex: number = sortedAllocatedSizeIndex[size];
+    let sizeIndex: number = sortedAllocatedSizeIndex.get(size);
     let freedSizeArray = freedMemory.get(sortedAllocatedSizeArray[sizeIndex]);
     while (sizeIndex < maxSizeIndex && (!freedSizeArray || !freedSizeArray.length)) {
       sizeIndex++;
@@ -87,7 +90,8 @@ export function malloc(size: number): number {
 
   // 检测tail是否可分配
   if (allocedMemoryTailPointer + size > wasmMemory.buffer.byteLength) {
-    wasmMemory.grow(8);
+    wasmMemory.grow(lastGrow *= 2);
+    wasmMemoryBuffer = wasmMemory.buffer;
   }
 
   ptr = allocedMemoryTailPointer;
@@ -106,11 +110,8 @@ export function free(ptr: number): void {
   }
 }
 
-const wasmRegistry = new FinalizationRegistry((ptr: number) => {
+export const wasmRegistry = new FinalizationRegistry((ptr: number) => {
   free(ptr);
-  console.log('free ptr', ptr);
+  // console.log('free ptr', ptr);
 });
 
-export function registerDispose(obj: any, ptr: number) {
-  wasmRegistry.register(obj, ptr);
-}

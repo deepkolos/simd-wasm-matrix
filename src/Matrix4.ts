@@ -1,4 +1,4 @@
-import { wasmMemory, malloc, wasmExports, registerDispose } from './wasm';
+import { malloc, wasmExports, wasmRegistry, free, wasmMemoryBuffer } from './wasm';
 
 export class Matrix4 {
   private ptr: number;
@@ -6,9 +6,9 @@ export class Matrix4 {
 
   constructor() {
     this.ptr = malloc(16 * 4);
-    this._elements = new Float32Array(wasmMemory.buffer, this.ptr, 16);
+    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
     this.identity();
-    registerDispose(this, this.ptr);
+    wasmRegistry.register(this, this.ptr);
   }
 
   // --------- operation ---------
@@ -46,7 +46,7 @@ export class Matrix4 {
 
   get elements(): Float32Array {
     if (!this._elements.length) {
-      this._elements = new Float32Array(wasmMemory.buffer, this.ptr, 16);
+      this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
     }
     return this._elements;
   }
@@ -94,5 +94,11 @@ export class Matrix4 {
     const te = this.elements;
     for (let i = 0; i < 16; i++) te[i] = array[i + offset];
     return this;
+  }
+
+  // 支持手动提前释放
+  dispose() {
+    wasmRegistry.unregister(this);
+    free(this.ptr);
   }
 }
