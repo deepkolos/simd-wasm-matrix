@@ -129,7 +129,7 @@ test('Matrix4.invert', () => {
 
 const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix'];
 const nodes = names.map(i => $(`log-${i}`));
-let loopCount = 100000;
+let loopCount = 1000000;
 
 // const GLMWasmRegister = new FinalizationRegistry(ptr => {
 //   GLMWasm.freeMatrix4(ptr);
@@ -145,48 +145,20 @@ const m21 = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
 const m22 = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
 
 const benchmarks = {
-  // instancing: {
-  //   [names[0]]() {
-  //     const mat4 = new Matrix4();
-  //     mat4.dispose();
-  //   },
-  //   [names[1]]() {
-  //     const mat4 = GLMWasm.Matrix4.create();
-  //     mat4.free();
-  //     // GLMWasmRegister.register(mat4, mat4.ptr);
-  //   },
-  //   [names[2]]() {
-  //     const mat4 = GLM.mat4.create();
-  //   },
-  // },
-  // instancing100: {
-  //   [names[0]]() {
-  //     const array = [];
-  //     for (let i = 0; i < 100; i++) {
-  //       array.push(new Matrix4());
-  //     }
-
-  //     for (let i = 0; i < 100; i++) {
-  //       array[i].dispose();
-  //     }
-  //   },
-  //   [names[1]]() {
-  //     const array = [];
-  //     for (let i = 0; i < 100; i++) {
-  //       array.push(GLMWasm.Matrix4.create());
-  //     }
-
-  //     for (let i = 0; i < 100; i++) {
-  //       array[i].free();
-  //     }
-  //   },
-  //   [names[2]]() {
-  //     const array = [];
-  //     for (let i = 0; i < 100; i++) {
-  //       array.push(GLM.mat4.create());
-  //     }
-  //   },
-  // },
+  'instancing[10^5]': {
+    [names[0]]() {
+      const mat4 = new Matrix4();
+      mat4.dispose();
+    },
+    [names[1]]() {
+      const mat4 = GLMWasm.Matrix4.create();
+      mat4.free();
+      // GLMWasmRegister.register(mat4, mat4.ptr);
+    },
+    [names[2]]() {
+      const mat4 = GLM.mat4.create();
+    },
+  },
   multiply: {
     [names[0]]() {
       m02.multiplyMatrices(m00, m01);
@@ -244,7 +216,9 @@ function bench() {
   const currentLoopCount = loopCount;
   Object.keys(benchmarks).forEach(fnName => {
     const runCfg = benchmarks[fnName];
-    const result = benchmark(runCfg, currentLoopCount, '', false);
+    const match = fnName.match(/\[10\^(\d)\]/);
+    const loopCount = match ? Math.min(10 ** (match[1] | 0), currentLoopCount) : currentLoopCount;
+    const result = benchmark(runCfg, loopCount, '', false);
     logs[fnName] = result;
   });
 
@@ -253,7 +227,8 @@ function bench() {
     const result = logs[methodName];
     names.forEach((name, index) => {
       const $log = nodes[index];
-      $log.children[i].innerText = result[name] !== undefined ? result[name].toFixed(2) + 'ms' : 'NaN';
+      $log.children[i].innerText =
+        result[name] !== undefined ? result[name].toFixed(2) + 'ms' : 'NaN';
     });
   });
 }
