@@ -129,7 +129,7 @@ test('Matrix4.invert', () => {
 
 const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix'];
 const nodes = names.map(i => $(`log-${i}`));
-let loopCount = 10000;
+let loopCount = 100000;
 
 // const GLMWasmRegister = new FinalizationRegistry(ptr => {
 //   GLMWasm.freeMatrix4(ptr);
@@ -285,4 +285,4 @@ function initUI() {
 
 initUI();
 bench();
-setInterval(bench, 3000);
+setInterval(bench, 2000);
