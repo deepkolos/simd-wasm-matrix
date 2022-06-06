@@ -26,14 +26,14 @@ const freedMemory = new Map();
 const allocatedMemory = new Map();
 let lastGrow = 8;
 
-async function init({ wasm = '', simdWasm = '' } = {}) {
+async function init({ wasm = '', simdWasm = '', noSIMD = false } = {}) {
   if (window.FinalizationRegistry) storeDataInWasm = true;
   try {
-    instanceSource = await WebAssembly.instantiateStreaming(fetch(simdWasm));
-    console.info('using simd');
+    instanceSource = await WebAssembly.instantiateStreaming(fetch(noSIMD ? wasm : simdWasm));
+    console.info(noSIMD ? 'not using simd' : 'using simd');
   } catch (error) {
     instanceSource = await WebAssembly.instantiateStreaming(fetch(wasm));
-    console.info('using none simd');
+    console.info('not using simd');
   } finally {
     wasmExports = instanceSource.instance.exports ;
     wasmMemory = wasmExports.memory;
@@ -74,8 +74,8 @@ function malloc(size) {
   }
 
   // 检测tail是否可分配
-  if (allocedMemoryTailPointer + size > wasmMemory.buffer.byteLength) {
-    wasmMemory.grow(lastGrow *= 2);
+  if (allocedMemoryTailPointer + size > wasmMemoryBuffer.byteLength) {
+    wasmMemory.grow((lastGrow *= 2));
     wasmMemoryBuffer = wasmMemory.buffer;
   }
 
@@ -125,6 +125,10 @@ class Matrix4 {
     wasmExports.matrix4_multiply(a.ptr, b.ptr, this.ptr);
     return this;
   }
+  multiplyScalar(s) {
+    wasmExports.matrix4_multiply_scalar(this.ptr, s);
+    return this;
+  }
 
   determinant() {
     return wasmExports.matrix4_determinant(this.ptr);
@@ -139,6 +143,36 @@ class Matrix4 {
   }
   invertTransform() {
     wasmExports.matrix4_invert_transform(this.ptr);
+    return this;
+  }
+
+  scale(v) {
+    const te = this.elements;
+    const x = v.x,
+      y = v.y,
+      z = v.z;
+
+    te[0] *= x;
+    te[4] *= y;
+    te[8] *= z;
+    te[1] *= x;
+    te[5] *= y;
+    te[9] *= z;
+    te[2] *= x;
+    te[6] *= y;
+    te[10] *= z;
+    te[3] *= x;
+    te[7] *= y;
+    te[11] *= z;
+
+    return this;
+  }
+  setPosition(x, y, z) {
+    const te = this.elements;
+
+    te[12] = x;
+    te[13] = y;
+    te[14] = z;
     return this;
   }
 
@@ -193,6 +227,244 @@ class Matrix4 {
   fromArray(array, offset = 0) {
     const te = this.elements;
     for (let i = 0; i < 16; i++) te[i] = array[i + offset];
+    return this;
+  }
+  toArray(array = [], offset = 0) {
+    const te = this.elements;
+
+    array[offset] = te[0];
+    array[offset + 1] = te[1];
+    array[offset + 2] = te[2];
+    array[offset + 3] = te[3];
+
+    array[offset + 4] = te[4];
+    array[offset + 5] = te[5];
+    array[offset + 6] = te[6];
+    array[offset + 7] = te[7];
+
+    array[offset + 8] = te[8];
+    array[offset + 9] = te[9];
+    array[offset + 10] = te[10];
+    array[offset + 11] = te[11];
+
+    array[offset + 12] = te[12];
+    array[offset + 13] = te[13];
+    array[offset + 14] = te[14];
+    array[offset + 15] = te[15];
+
+    return array;
+  }
+
+  setFromMatrix3(m) {
+    const me = m.elements;
+    // prettier-ignore
+    this.set(
+			me[ 0 ], me[ 3 ], me[ 6 ], 0,
+			me[ 1 ], me[ 4 ], me[ 7 ], 0,
+			me[ 2 ], me[ 5 ], me[ 8 ], 0,
+			0, 0, 0, 1
+		);
+    return this;
+  }
+  extractBasis(xAxis, yAxis, zAxis) {
+    xAxis.setFromMatrixColumn(this, 0);
+    yAxis.setFromMatrixColumn(this, 1);
+    zAxis.setFromMatrixColumn(this, 2);
+    return this;
+  }
+  makeBasis(xAxis, yAxis, zAxis) {
+    // prettier-ignore
+    this.set(
+			xAxis.x, yAxis.x, zAxis.x, 0,
+			xAxis.y, yAxis.y, zAxis.y, 0,
+			xAxis.z, yAxis.z, zAxis.z, 0,
+			0, 0, 0, 1
+		);
+    return this;
+  }
+
+  makeTranslation(x, y, z) {
+    this.set(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
+    return this;
+  }
+  makeRotationX(theta) {
+    const c = Math.cos(theta),
+      s = Math.sin(theta);
+    this.set(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
+    return this;
+  }
+  makeRotationY(theta) {
+    const c = Math.cos(theta),
+      s = Math.sin(theta);
+    this.set(c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1);
+    return this;
+  }
+  makeRotationZ(theta) {
+    const c = Math.cos(theta),
+      s = Math.sin(theta);
+    this.set(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    return this;
+  }
+  makeRotationAxis(axis, angle) {
+    // Based on http://www.gamedev.net/reference/articles/article1199.asp
+
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    const t = 1 - c;
+    const x = axis.x,
+      y = axis.y,
+      z = axis.z;
+    const tx = t * x,
+      ty = t * y;
+
+    this.set(
+      tx * x + c,
+      tx * y - s * z,
+      tx * z + s * y,
+      0,
+      tx * y + s * z,
+      ty * y + c,
+      ty * z - s * x,
+      0,
+      tx * z - s * y,
+      ty * z + s * x,
+      t * z * z + c,
+      0,
+      0,
+      0,
+      0,
+      1,
+    );
+    return this;
+  }
+  makeScale(x, y, z) {
+    this.set(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
+    return this;
+  }
+  makeShear(xy, xz, yx, yz, zx, zy) {
+    this.set(1, yx, zx, 0, xy, 1, zy, 0, xz, yz, 1, 0, 0, 0, 0, 1);
+    return this;
+  }
+  // prettier-ignore
+  makePerspective( left, right, top, bottom, near, far ) {
+		const te = this.elements;
+		const x = 2 * near / ( right - left );
+		const y = 2 * near / ( top - bottom );
+
+		const a = ( right + left ) / ( right - left );
+		const b = ( top + bottom ) / ( top - bottom );
+		const c = - ( far + near ) / ( far - near );
+		const d = - 2 * far * near / ( far - near );
+
+		te[ 0 ] = x;	te[ 4 ] = 0;	te[ 8 ] = a;	te[ 12 ] = 0;
+		te[ 1 ] = 0;	te[ 5 ] = y;	te[ 9 ] = b;	te[ 13 ] = 0;
+		te[ 2 ] = 0;	te[ 6 ] = 0;	te[ 10 ] = c;	te[ 14 ] = d;
+		te[ 3 ] = 0;	te[ 7 ] = 0;	te[ 11 ] = - 1;	te[ 15 ] = 0;
+		return this;
+	}
+  // prettier-ignore
+  makeOrthographic( left, right, top, bottom, near, far ) {
+		const te = this.elements;
+		const w = 1.0 / ( right - left );
+		const h = 1.0 / ( top - bottom );
+		const p = 1.0 / ( far - near );
+
+		const x = ( right + left ) * w;
+		const y = ( top + bottom ) * h;
+		const z = ( far + near ) * p;
+		te[ 0 ] = 2 * w;	te[ 4 ] = 0;	te[ 8 ] = 0;	te[ 12 ] = - x;
+		te[ 1 ] = 0;	te[ 5 ] = 2 * h;	te[ 9 ] = 0;	te[ 13 ] = - y;
+		te[ 2 ] = 0;	te[ 6 ] = 0;	te[ 10 ] = - 2 * p;	te[ 14 ] = - z;
+		te[ 3 ] = 0;	te[ 7 ] = 0;	te[ 11 ] = 0;	te[ 15 ] = 1;
+		return this;
+	}
+
+  compose(position, quaternion, scale) {
+    const te = this.elements;
+
+    const x = quaternion._x,
+      y = quaternion._y,
+      z = quaternion._z,
+      w = quaternion._w;
+    const x2 = x + x,
+      y2 = y + y,
+      z2 = z + z;
+    const xx = x * x2,
+      xy = x * y2,
+      xz = x * z2;
+    const yy = y * y2,
+      yz = y * z2,
+      zz = z * z2;
+    const wx = w * x2,
+      wy = w * y2,
+      wz = w * z2;
+
+    const sx = scale.x,
+      sy = scale.y,
+      sz = scale.z;
+
+    te[0] = (1 - (yy + zz)) * sx;
+    te[1] = (xy + wz) * sx;
+    te[2] = (xz - wy) * sx;
+    te[3] = 0;
+
+    te[4] = (xy - wz) * sy;
+    te[5] = (1 - (xx + zz)) * sy;
+    te[6] = (yz + wx) * sy;
+    te[7] = 0;
+
+    te[8] = (xz + wy) * sz;
+    te[9] = (yz - wx) * sz;
+    te[10] = (1 - (xx + yy)) * sz;
+    te[11] = 0;
+
+    te[12] = position.x;
+    te[13] = position.y;
+    te[14] = position.z;
+    te[15] = 1;
+
+    return this;
+  }
+  decompose(position, quaternion, scale) {
+    // const te = this.elements;
+
+    // let sx = _v1.set(te[0], te[1], te[2]).length();
+    // const sy = _v1.set(te[4], te[5], te[6]).length();
+    // const sz = _v1.set(te[8], te[9], te[10]).length();
+
+    // // if determine is negative, we need to invert one scale
+    // const det = this.determinant();
+    // if (det < 0) sx = -sx;
+
+    // position.x = te[12];
+    // position.y = te[13];
+    // position.z = te[14];
+
+    // // scale the rotation part
+    // _m1.copy(this);
+
+    // const invSX = 1 / sx;
+    // const invSY = 1 / sy;
+    // const invSZ = 1 / sz;
+
+    // _m1.elements[0] *= invSX;
+    // _m1.elements[1] *= invSX;
+    // _m1.elements[2] *= invSX;
+
+    // _m1.elements[4] *= invSY;
+    // _m1.elements[5] *= invSY;
+    // _m1.elements[6] *= invSY;
+
+    // _m1.elements[8] *= invSZ;
+    // _m1.elements[9] *= invSZ;
+    // _m1.elements[10] *= invSZ;
+
+    // quaternion.setFromRotationMatrix(_m1);
+
+    // scale.x = sx;
+    // scale.y = sy;
+    // scale.z = sz;
+
     return this;
   }
 

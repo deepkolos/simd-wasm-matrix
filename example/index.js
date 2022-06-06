@@ -2,11 +2,14 @@ import { benchmark, expect, test } from './lib/test.js';
 import { init, Matrix4 } from '../dist/index.esm.js';
 import { $ } from './lib/dom.js';
 import * as GLM from '../node_modules/gl-matrix/esm/index.js';
+import * as THREE from './lib/three.module.js';
 
 const { glMatrixWasm: GLMWasm } = window;
 
+const noSIMD = new URLSearchParams(location.search).get('nosimd') === 'true';
+
 await GLMWasm.init();
-await init({ wasm: '../dist/matrix.wasm', simdWasm: '../dist/matrix.simd.wasm' });
+await init({ wasm: '../dist/matrix.wasm', simdWasm: '../dist/matrix.simd.wasm', noSIMD });
 
 //#region tests
 
@@ -79,6 +82,14 @@ test('Matrix4.premultiply', () => {
   ]);
 });
 
+test('Matrix4.multiplyScalar', () => {
+  const mat4A = new Matrix4();
+  mat4A.set(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+  mat4A.multiplyScalar(2);
+
+  expect(mat4A.elements).toBe([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]);
+});
+
 test('Matrix4.determinant', () => {
   const mat4A = new Matrix4();
   expect(mat4A.determinant()).toBe(1);
@@ -109,40 +120,57 @@ test('Matrix4.transpose', () => {
 
 test('Matrix4.invert', () => {
   const mat4A = new Matrix4();
-  const mat4B = new Matrix4();
+  const mat4B = new THREE.Matrix4();
   mat4A.set(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
   mat4B.set(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
 
   mat4A.invert();
-  expect(mat4A.elements).toBe([
-    0.062068965286016464, -0.07586206495761871, 0.25287356972694397, -0.08045977354049683,
-    0.1310344785451889, 0.062068965286016464, -0.8735632300376892, 0.4597701132297516,
-    -0.19310344755649567, 0.013793103396892548, 0.28735631704330444, -0.04597701132297516,
-    0.16551724076271057, 0.1310344785451889, -0.10344827175140381, -0.10344827175140381,
-  ]);
+  mat4B.invert();
+  expect(mat4A.elements).toBe(mat4B.elements);
+});
 
-  mat4A.invert();
+test('Matrix4.invertTransform', () => {
+  const mat4A = new Matrix4();
+  const mat4B = new THREE.Matrix4();
+  mat4A.makeRotationX(Math.PI / 2);
+  mat4B.makeRotationX(Math.PI / 2);
+  mat4A.setPosition(1, 2, 3);
+  mat4B.setPosition(1, 2, 3);
+  mat4A.scale({ x: 1, y: 2, z: 3 });
+  mat4B.scale({ x: 1, y: 2, z: 3 });
+
+  mat4A.invertTransform();
+  mat4B.invert();
+  expect(mat4A.elements).toBe(mat4B.elements);
+
+  mat4A.invertTransform();
+  mat4B.invert();
   expect(mat4A.elements).toBe(mat4B.elements);
 });
 
 //#endregion
 
-const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix'];
+const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix', 'three'];
 const nodes = names.map(i => $(`log-${i}`));
 let loopCount = 1000000;
 
 // const GLMWasmRegister = new FinalizationRegistry(ptr => {
 //   GLMWasm.freeMatrix4(ptr);
 // });
-const m00 = new Matrix4();
-const m01 = new Matrix4();
-const m02 = new Matrix4();
-const m10 = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
-const m11 = GLMWasm.Matrix4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
-const m12 = GLMWasm.Matrix4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
-const m20 = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
-const m21 = GLM.mat4.fromValues(2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1);
-const m22 = GLM.mat4.fromValues(7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2);
+const m0 = [7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2];
+const m1 = [2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1];
+const m00 = new Matrix4().set(...m0);
+const m01 = new Matrix4().set(...m1);
+const m02 = new Matrix4().set(...m0);
+const m10 = GLMWasm.Matrix4.fromValues(...m0);
+const m11 = GLMWasm.Matrix4.fromValues(...m1);
+const m12 = GLMWasm.Matrix4.fromValues(...m0);
+const m20 = GLM.mat4.fromValues(...m0);
+const m21 = GLM.mat4.fromValues(...m1);
+const m22 = GLM.mat4.fromValues(...m0);
+const m30 = new THREE.Matrix4().set(...m0);
+const m31 = new THREE.Matrix4().set(...m1);
+const m32 = new THREE.Matrix4().set(...m0);
 
 const benchmarks = {
   'instancing[10^5]': {
@@ -158,6 +186,9 @@ const benchmarks = {
     [names[2]]() {
       const mat4 = GLM.mat4.create();
     },
+    [names[3]]() {
+      const mat4 = new THREE.Matrix4();
+    },
   },
   multiply: {
     [names[0]]() {
@@ -168,6 +199,23 @@ const benchmarks = {
     },
     [names[2]]() {
       GLM.mat4.multiply(m22, m20, m21);
+    },
+    [names[3]]() {
+      m32.multiplyMatrices(m30, m31);
+    },
+  },
+  multiplyScalar: {
+    [names[0]]() {
+      m02.multiplyScalar(2);
+    },
+    [names[1]]() {
+      GLMWasm.Matrix4.multiplyScalar(m12, m10, 2);
+    },
+    [names[2]]() {
+      GLM.mat4.multiplyScalar(m22, m20, 2);
+    },
+    [names[3]]() {
+      m32.multiplyScalar(2);
     },
   },
   determinant: {
@@ -180,6 +228,9 @@ const benchmarks = {
     [names[2]]() {
       GLM.mat4.determinant(m20);
     },
+    [names[3]]() {
+      m32.determinant();
+    },
   },
   invert: {
     [names[0]]() {
@@ -190,6 +241,9 @@ const benchmarks = {
     },
     [names[2]]() {
       GLM.mat4.invert(m20, m20);
+    },
+    [names[3]]() {
+      m30.invert();
     },
   },
   invertTransform: {
@@ -207,9 +261,13 @@ const benchmarks = {
     [names[2]]() {
       GLM.mat4.transpose(m20, m20);
     },
+    [names[3]]() {
+      m30.transpose();
+    },
   },
 };
 
+let benchCount = 20;
 function bench() {
   const logs = {};
   // loopCount变更下次生效
@@ -228,9 +286,11 @@ function bench() {
     names.forEach((name, index) => {
       const $log = nodes[index];
       $log.children[i].innerText =
-        result[name] !== undefined ? result[name].toFixed(2) + 'ms' : 'NaN';
+        result[name] !== undefined ? result[name].toFixed(2) + 'ms' : '-';
     });
   });
+
+  if (benchCount-- > 0) setTimeout(bench, 2000);
 }
 
 function initUI() {
@@ -260,4 +320,3 @@ function initUI() {
 
 initUI();
 bench();
-setInterval(bench, 2000);

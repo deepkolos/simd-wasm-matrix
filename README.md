@@ -13,15 +13,15 @@
 
 ## 性能
 
-需关闭devtools测试
+需关闭 devtools 测试
 
 ## 体积
 
-| name             | version | js(min) | wasm | simd wasm | size |
-| ---------------- | ------- | ------- | ---- | --------- | ---- |
-| simd-wasm-matrix | dev     |         |      |           |      |
-| gl-matrix        | 3.4.3   | 51k     |      |           | 51k  |
-| gl-matrix-wasm   | 0.8.0   | 27k     | 81k  |           | 108k |
+| name             | version | js(min) | wasm | simd wasm | total size |
+| ---------------- | ------- | ------- | ---- | --------- | ---------- |
+| simd-wasm-matrix | dev     |         |      |           |            |
+| gl-matrix        | 3.4.3   | 51k     |      |           | 51k        |
+| gl-matrix-wasm   | 0.8.0   | 27k     | 81k  |           | 108k       |
 
 ## 开发
 

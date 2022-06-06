@@ -4,6 +4,9 @@ interface WasmExports {
   matrix4_invert(ptr: number): void;
   matrix4_invert_transform(ptr: number): void;
   matrix4_transpose(ptr: number): void;
+  matrix4_multiply_scalar(ptr: number, v: number): void;
+  // malloc(size: number): number;
+  // free(ptr: number): void;
   memory: WebAssembly.Memory;
   __data_end: WebAssembly.Global;
   __dso_handle: WebAssembly.Global;
@@ -41,14 +44,14 @@ const freedMemory = new Map<number, Array<number>>();
 const allocatedMemory = new Map<number, number>();
 let lastGrow = 8;
 
-export async function init({ wasm = '', simdWasm = '' } = {}): Promise<void> {
+export async function init({ wasm = '', simdWasm = '', noSIMD = false } = {}): Promise<void> {
   if (window.FinalizationRegistry) storeDataInWasm = true;
   try {
-    instanceSource = await WebAssembly.instantiateStreaming(fetch(simdWasm));
-    console.info('using simd');
+    instanceSource = await WebAssembly.instantiateStreaming(fetch(noSIMD ? wasm : simdWasm));
+    console.info(noSIMD ? 'not using simd' : 'using simd');
   } catch (error) {
     instanceSource = await WebAssembly.instantiateStreaming(fetch(wasm));
-    console.info('using none simd');
+    console.info('not using simd');
   } finally {
     wasmExports = instanceSource.instance.exports as unknown as WasmExports;
     wasmMemory = wasmExports.memory;
@@ -89,8 +92,8 @@ export function malloc(size: number): number {
   }
 
   // 检测tail是否可分配
-  if (allocedMemoryTailPointer + size > wasmMemory.buffer.byteLength) {
-    wasmMemory.grow(lastGrow *= 2);
+  if (allocedMemoryTailPointer + size > wasmMemoryBuffer.byteLength) {
+    wasmMemory.grow((lastGrow *= 2));
     wasmMemoryBuffer = wasmMemory.buffer;
   }
 
@@ -114,4 +117,3 @@ export const wasmRegistry = new FinalizationRegistry((ptr: number) => {
   free(ptr);
   // console.log('free ptr', ptr);
 });
-

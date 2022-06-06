@@ -4,7 +4,7 @@
   "description": "一个有 simd 加速和自动 GC 的 matrix 数学库",
   "main": "index.js",
   "scripts": {
-    "srv": "http-server .",
+    "srv": "http-server -c-1 -o '/example/index.html'",
     "dev": "concurrently 'pnpm dev:ts' 'pnpm dev:cpp'",
     "build": "concurrently 'pnpm build:ts' 'pnpm build:cpp'",
     "dev:ts": "rollup -cw",
