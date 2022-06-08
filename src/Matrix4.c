@@ -4,7 +4,7 @@
 
 #ifdef __SIMD__
 
-static __inline__ v128_t wasm_f32x4_dot4(v128_t a, v128_t b) {
+static __inline__ v128_t wasm_f32x4_dot_xyzw(v128_t a, v128_t b) {
   v128_t xyzw = wasm_f32x4_mul(a, b);
   v128_t zwxy = wasm_i32x4_shuffle(xyzw, xyzw, 2, 3, 4, 5);
   v128_t abab = wasm_f32x4_add(xyzw, zwxy);
@@ -13,7 +13,7 @@ static __inline__ v128_t wasm_f32x4_dot4(v128_t a, v128_t b) {
   return cccc;
 }
 
-static __inline__ v128_t wasm_f32x4_dot2(v128_t a, v128_t b) {
+static __inline__ v128_t wasm_f32x4_dot_xy__(v128_t a, v128_t b) {
   v128_t xyxy = wasm_f32x4_mul(a, b);
   v128_t yxyx = wasm_i32x4_shuffle(xyxy, xyxy, 1, 0, 5, 4);
   v128_t aaaa = wasm_f32x4_add(xyxy, yxyx);
@@ -171,17 +171,17 @@ void matrix4_invert(float a[16]) {
   v128_t d0r = wasm_i32x4_shuffle(s2, s1, 0, 2, 3, 7);
   v128_t d1l = wasm_i32x4_shuffle(s0, s1, 1, 4, 1, 4);
   v128_t d1r = wasm_i32x4_shuffle(s2, s1, 1, 2, 1, 2);
-  v128_t d0 = wasm_f32x4_dot4(d0l, d0r);
-  v128_t d1 = wasm_f32x4_dot2(d1l, d1r);
+  v128_t d0 = wasm_f32x4_dot_xyzw(d0l, d0r);
+  v128_t d1 = wasm_f32x4_dot_xy__(d1l, d1r);
   v128_t d = wasm_f32x4_sub(d0, d1);
 
   float det = wasm_f32x4_extract_lane(d, 0);
   // Calculate the determinant
   // float det =
   //     b00 * b11 //d0
-  //   + b02 * b09 
-  //   + b03 * b08 
-  //   + b05 * b06 
+  //   + b02 * b09
+  //   + b03 * b08
+  //   + b05 * b06
   //   -(b04 * b07 // d1
   //   + b01 * b10);
 
