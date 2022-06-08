@@ -9,9 +9,10 @@ const sourcesPath = sources.map(i => `src/${i}`);
 const watchMode = argv.w;
 
 const flags = [
+  watchMode ? '-g' : '',
   `--target=wasm32`,
   '-nostdlib',
-  '-O3',
+  watchMode ? '' : '-O3',
   '-flto',
   '-DNDEBUG',
   '-Wl,--lto-O3',

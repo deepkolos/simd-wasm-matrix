@@ -267,7 +267,7 @@ const benchmarks = {
   },
 };
 
-let benchCount = 20;
+let benchCount = 10;
 function bench() {
   const logs = {};
   // loopCount变更下次生效

@@ -330,19 +330,19 @@
   )
  )
  (func $3 (param $0 i32)
-  (local $1 f32)
-  (local $2 f32)
-  (local $3 f32)
-  (local $4 f32)
-  (local $5 f32)
-  (local $6 f32)
-  (local $7 f32)
-  (local $8 f32)
-  (local $9 f32)
-  (local $10 f32)
-  (local $11 f32)
-  (local $12 f32)
-  (local $13 f32)
+  (local $1 v128)
+  (local $2 v128)
+  (local $3 v128)
+  (local $4 v128)
+  (local $5 v128)
+  (local $6 v128)
+  (local $7 v128)
+  (local $8 v128)
+  (local $9 v128)
+  (local $10 v128)
+  (local $11 v128)
+  (local $12 v128)
+  (local $13 v128)
   (local $14 f32)
   (local $15 f32)
   (local $16 f32)
@@ -359,29 +359,26 @@
   (local $27 f32)
   (local $28 f32)
   (local $29 f32)
-  (local $30 v128)
-  (local $31 v128)
-  (local $32 v128)
-  (local $33 v128)
+  (local $30 f32)
   (if
    (f32.ne
-    (local.tee $1
+    (local.tee $30
      (f32x4.extract_lane 0
       (f32x4.sub
        (f32x4.add
-        (local.tee $31
+        (local.tee $2
          (f32x4.add
-          (local.tee $31
+          (local.tee $2
            (f32x4.mul
             (i8x16.shuffle 0 1 2 3 8 9 10 11 12 13 14 15 20 21 22 23
-             (local.tee $32
+             (local.tee $4
               (f32x4.sub
                (f32x4.mul
                 (f32x4.replace_lane 3
                  (v128.load32_splat
                   (local.get $0)
                  )
-                 (local.tee $8
+                 (local.tee $22
                   (f32.load offset=4
                    (local.get $0)
                   )
@@ -389,55 +386,59 @@
                 )
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (local.tee $30
+                  (local.tee $1
                    (f32x4.replace_lane 1
-                    (v128.load32_splat offset=20
-                     (local.get $0)
+                    (local.tee $5
+                     (v128.load32_splat offset=20
+                      (local.get $0)
+                     )
                     )
-                    (local.tee $6
+                    (local.tee $14
                      (f32.load offset=24
                       (local.get $0)
                      )
                     )
                    )
                   )
-                  (local.tee $9
+                  (local.tee $26
                    (f32.load offset=28
                     (local.get $0)
                    )
                   )
                  )
-                 (local.get $6)
+                 (local.get $14)
                 )
                )
                (f32x4.mul
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (local.tee $31
+                  (local.tee $3
                    (f32x4.replace_lane 1
-                    (v128.load32_splat offset=4
-                     (local.get $0)
+                    (local.tee $6
+                     (v128.load32_splat offset=4
+                      (local.get $0)
+                     )
                     )
-                    (local.tee $7
+                    (local.tee $15
                      (f32.load offset=8
                       (local.get $0)
                      )
                     )
                    )
                   )
-                  (local.tee $10
+                  (local.tee $27
                    (f32.load offset=12
                     (local.get $0)
                    )
                   )
                  )
-                 (local.get $7)
+                 (local.get $15)
                 )
                 (f32x4.replace_lane 3
                  (v128.load32_splat offset=16
                   (local.get $0)
                  )
-                 (local.tee $11
+                 (local.tee $23
                   (f32.load offset=20
                    (local.get $0)
                   )
@@ -446,32 +447,34 @@
                )
               )
              )
-             (local.tee $30
+             (local.tee $1
               (f32x4.sub
                (f32x4.mul
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (local.get $31)
-                  (local.tee $2
+                  (local.get $3)
+                  (local.tee $16
                    (f32.load offset=32
                     (local.get $0)
                    )
                   )
                  )
-                 (local.get $2)
+                 (local.get $16)
                 )
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (v128.load32_splat offset=28
-                   (local.get $0)
+                  (local.tee $7
+                   (v128.load32_splat offset=28
+                    (local.get $0)
+                   )
                   )
-                  (local.tee $3
+                  (local.tee $20
                    (f32.load offset=56
                     (local.get $0)
                    )
                   )
                  )
-                 (local.tee $12
+                 (local.tee $17
                   (f32.load offset=52
                    (local.get $0)
                   )
@@ -481,16 +484,18 @@
                (f32x4.mul
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (v128.load32_splat offset=12
-                   (local.get $0)
+                  (local.tee $8
+                   (v128.load32_splat offset=12
+                    (local.get $0)
+                   )
                   )
-                  (local.tee $4
+                  (local.tee $21
                    (f32.load offset=40
                     (local.get $0)
                    )
                   )
                  )
-                 (local.tee $13
+                 (local.tee $18
                   (f32.load offset=36
                    (local.get $0)
                   )
@@ -498,89 +503,117 @@
                 )
                 (f32x4.replace_lane 3
                  (f32x4.replace_lane 2
-                  (local.get $30)
-                  (local.tee $5
+                  (local.get $1)
+                  (local.tee $19
                    (f32.load offset=48
                     (local.get $0)
                    )
                   )
                  )
-                 (local.get $5)
+                 (local.get $19)
                 )
                )
               )
              )
             )
             (i8x16.shuffle 0 1 2 3 8 9 10 11 12 13 14 15 28 29 30 31
-             (local.tee $33
+             (local.tee $3
               (f32x4.sub
                (f32x4.mul
                 (f32x4.replace_lane 3
-                 (f32x4.replace_lane 0
-                  (v128.load32_splat offset=36
+                 (f32x4.replace_lane 2
+                  (local.tee $9
+                   (f32x4.replace_lane 1
+                    (v128.load32_splat offset=40
+                     (local.get $0)
+                    )
+                    (local.get $18)
+                   )
+                  )
+                  (local.get $18)
+                 )
+                 (local.get $16)
+                )
+                (f32x4.replace_lane 3
+                 (f32x4.replace_lane 2
+                  (local.tee $10
+                   (v128.load32_splat offset=60
+                    (local.get $0)
+                   )
+                  )
+                  (local.get $20)
+                 )
+                 (local.tee $28
+                  (f32.load offset=60
                    (local.get $0)
                   )
-                  (local.get $4)
                  )
-                 (local.get $2)
-                )
-                (f32x4.replace_lane 2
-                 (v128.load32_splat offset=60
-                  (local.get $0)
-                 )
-                 (local.get $3)
                 )
                )
                (f32x4.mul
-                (f32x4.replace_lane 2
-                 (v128.load32_splat offset=44
-                  (local.get $0)
-                 )
-                 (local.get $4)
-                )
                 (f32x4.replace_lane 3
-                 (f32x4.replace_lane 0
-                  (v128.load32_splat offset=52
+                 (f32x4.replace_lane 2
+                  (local.tee $11
+                   (v128.load32_splat offset=44
+                    (local.get $0)
+                   )
+                  )
+                  (local.get $21)
+                 )
+                 (local.tee $29
+                  (f32.load offset=44
                    (local.get $0)
                   )
-                  (local.get $3)
                  )
-                 (local.get $5)
+                )
+                (f32x4.replace_lane 3
+                 (f32x4.replace_lane 2
+                  (local.tee $12
+                   (f32x4.replace_lane 1
+                    (v128.load32_splat offset=56
+                     (local.get $0)
+                    )
+                    (local.get $17)
+                   )
+                  )
+                  (local.get $17)
+                 )
+                 (local.get $19)
                 )
                )
               )
              )
-             (local.get $30)
+             (local.get $1)
             )
            )
           )
           (i8x16.shuffle 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
-           (local.get $31)
-           (local.get $31)
+           (local.get $2)
+           (local.get $2)
           )
          )
         )
         (i8x16.shuffle 4 5 6 7 0 1 2 3 20 21 22 23 16 17 18 19
-         (local.get $31)
-         (local.get $31)
+         (local.get $2)
+         (local.get $2)
         )
        )
        (f32x4.add
-        (local.tee $30
+        (local.tee $2
          (f32x4.mul
-          (i8x16.shuffle 4 5 6 7 16 17 18 19 4 5 6 7 16 17 18 19
-           (local.get $32)
-           (local.get $30)
+          (i8x16.shuffle 0 1 2 3 20 21 22 23 0 1 2 3 20 21 22 23
+           (local.get $1)
+           (local.get $4)
           )
-          (i8x16.shuffle 4 5 6 7 8 9 10 11 4 5 6 7 8 9 10 11
-           (local.get $33)
-           (local.get $30)
+          (i8x16.shuffle 8 9 10 11 20 21 22 23 8 9 10 11 20 21 22 23
+           (local.get $1)
+           (local.get $3)
           )
          )
         )
         (i8x16.shuffle 4 5 6 7 0 1 2 3 20 21 22 23 16 17 18 19
-         (local.get $30)
-         (local.get $30)
+         (local.get $2)
+         (local.get $2)
         )
        )
       )
@@ -589,510 +622,273 @@
     (f32.const 0)
    )
    (block
-    (local.set $14
-     (f32.load
-      (local.get $0)
-     )
-    )
-    (f32.store offset=32
+    (v128.store offset=48 align=4
      (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.mul
-        (local.get $9)
-        (local.tee $18
-         (f32.sub
-          (f32.mul
-           (local.get $2)
-           (local.get $12)
+     (i8x16.shuffle 0 1 2 3 4 5 6 7 24 25 26 27 28 29 30 31
+      (i8x16.shuffle 12 13 14 15 28 29 30 31 0 0 0 0 0 0 0 0
+       (local.tee $2
+        (f32x4.mul
+         (f32x4.sub
+          (f32x4.sub
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (f32x4.replace_lane 1
+               (f32x4.splat
+                (local.get $15)
+               )
+               (local.get $22)
+              )
+              (local.get $14)
+             )
+             (local.get $23)
+            )
+            (local.tee $13
+             (i8x16.shuffle 4 5 6 7 12 13 14 15 12 13 14 15 24 25 26 27
+              (local.get $3)
+              (local.get $1)
+             )
+            )
+           )
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (f32x4.replace_lane 1
+               (local.get $6)
+               (local.tee $24
+                (f32.load
+                 (local.get $0)
+                )
+               )
+              )
+              (local.tee $25
+               (f32.load offset=16
+                (local.get $0)
+               )
+              )
+             )
+             (local.get $25)
+            )
+            (local.tee $6
+             (i8x16.shuffle 0 1 2 3 4 5 6 7 0 1 2 3 8 9 10 11
+              (local.get $3)
+              (local.get $3)
+             )
+            )
+           )
           )
-          (f32.mul
-           (local.get $13)
-           (local.get $5)
+          (f32x4.mul
+           (f32x4.replace_lane 3
+            (f32x4.replace_lane 2
+             (local.get $8)
+             (local.get $26)
+            )
+            (local.get $14)
+           )
+           (local.tee $8
+            (i8x16.shuffle 8 9 10 11 28 29 30 31 24 25 26 27 28 29 30 31
+             (local.get $3)
+             (local.get $1)
+            )
+           )
+          )
+         )
+         (local.tee $3
+          (f32x4.splat
+           (f32.div
+            (f32.const 1)
+            (local.get $30)
+           )
           )
          )
         )
        )
-       (f32.sub
-        (f32.mul
-         (local.tee $15
-          (f32.load offset=16
-           (local.get $0)
+       (local.tee $5
+        (f32x4.mul
+         (f32x4.add
+          (f32x4.mul
+           (f32x4.replace_lane 3
+            (f32x4.replace_lane 2
+             (local.get $7)
+             (local.get $27)
+            )
+            (local.get $15)
+           )
+           (local.get $8)
           )
-         )
-         (local.tee $19
-          (f32.sub
-           (f32.mul
+          (f32x4.sub
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (f32x4.replace_lane 1
+               (local.get $5)
+               (local.get $25)
+              )
+              (local.get $24)
+             )
+             (local.get $24)
+            )
+            (local.get $6)
+           )
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (f32x4.replace_lane 1
+               (f32x4.splat
+                (local.get $14)
+               )
+               (local.get $23)
+              )
+              (local.get $15)
+             )
+             (local.get $22)
+            )
             (local.get $13)
-            (local.tee $16
-             (f32.load offset=60
-              (local.get $0)
-             )
-            )
-           )
-           (f32.mul
-            (local.tee $17
-             (f32.load offset=44
-              (local.get $0)
-             )
-            )
-            (local.get $12)
            )
           )
          )
+         (local.get $3)
         )
-        (f32.mul
-         (local.get $11)
-         (local.tee $20
-          (f32.sub
-           (f32.mul
-            (local.get $2)
-            (local.get $16)
+       )
+      )
+      (i8x16.shuffle 0 0 0 0 0 0 0 0 12 13 14 15 28 29 30 31
+       (local.tee $1
+        (f32x4.mul
+         (f32x4.sub
+          (f32x4.sub
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (local.get $9)
+              (local.get $20)
+             )
+             (local.get $17)
+            )
+            (local.tee $6
+             (i8x16.shuffle 0 1 2 3 24 25 26 27 24 25 26 27 20 21 22 23
+              (local.get $1)
+              (local.get $4)
+             )
+            )
            )
-           (f32.mul
-            (local.get $17)
-            (local.get $5)
+           (f32x4.mul
+            (f32x4.replace_lane 1
+             (f32x4.replace_lane 0
+              (f32x4.splat
+               (local.get $19)
+              )
+              (local.get $18)
+             )
+             (local.get $16)
+            )
+            (local.tee $7
+             (i8x16.shuffle 4 5 6 7 0 1 2 3 4 5 6 7 28 29 30 31
+              (local.get $1)
+              (local.get $4)
+             )
+            )
+           )
+          )
+          (f32x4.mul
+           (f32x4.replace_lane 3
+            (f32x4.replace_lane 2
+             (local.get $11)
+             (local.get $28)
+            )
+            (local.get $20)
+           )
+           (local.tee $4
+            (i8x16.shuffle 12 13 14 15 0 1 2 3 4 5 6 7 0 1 2 3
+             (local.get $4)
+             (local.get $4)
+            )
            )
           )
          )
+         (local.get $3)
         )
        )
-      )
-      (local.tee $1
-       (f32.div
-        (f32.const 1)
-        (local.get $1)
-       )
-      )
-     )
-    )
-    (f32.store
-     (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.mul
-        (local.get $9)
-        (local.tee $21
-         (f32.sub
-          (f32.mul
-           (local.get $13)
-           (local.get $3)
-          )
-          (f32.mul
+       (local.tee $4
+        (f32x4.mul
+         (f32x4.add
+          (f32x4.mul
+           (f32x4.replace_lane 3
+            (f32x4.replace_lane 2
+             (local.get $10)
+             (local.get $29)
+            )
+            (local.get $21)
+           )
            (local.get $4)
-           (local.get $12)
           )
-         )
-        )
-       )
-       (f32.sub
-        (f32.mul
-         (local.get $11)
-         (local.tee $22
-          (f32.sub
-           (f32.mul
-            (local.get $4)
-            (local.get $16)
-           )
-           (f32.mul
-            (local.get $17)
-            (local.get $3)
-           )
-          )
-         )
-        )
-        (f32.mul
-         (local.get $6)
-         (local.get $19)
-        )
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=52
-     (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.mul
-        (local.get $7)
-        (local.get $18)
-       )
-       (f32.sub
-        (f32.mul
-         (local.get $14)
-         (local.get $21)
-        )
-        (f32.mul
-         (local.get $8)
-         (local.tee $23
-          (f32.sub
-           (f32.mul
-            (local.get $2)
-            (local.get $3)
-           )
-           (f32.mul
-            (local.get $4)
-            (local.get $5)
-           )
-          )
-         )
-        )
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=20
-     (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.mul
-        (local.get $10)
-        (local.get $23)
-       )
-       (f32.sub
-        (f32.mul
-         (local.get $14)
-         (local.get $22)
-        )
-        (f32.mul
-         (local.get $7)
-         (local.get $20)
-        )
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=40
-     (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.sub
-        (f32.mul
-         (local.tee $24
-          (f32.sub
-           (f32.mul
-            (local.get $8)
-            (local.get $9)
-           )
-           (f32.mul
-            (local.get $10)
-            (local.get $11)
-           )
-          )
-         )
-         (local.get $5)
-        )
-        (f32.mul
-         (local.tee $25
-          (f32.sub
-           (f32.mul
-            (local.get $14)
-            (local.get $9)
-           )
-           (f32.mul
-            (local.get $10)
-            (local.get $15)
-           )
-          )
-         )
-         (local.get $12)
-        )
-       )
-       (f32.mul
-        (local.get $16)
-        (local.tee $26
-         (f32.sub
-          (f32.mul
-           (local.get $14)
-           (local.get $11)
-          )
-          (f32.mul
-           (local.get $8)
-           (local.get $15)
-          )
-         )
-        )
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=8
-     (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.sub
-        (f32.mul
-         (local.tee $27
-          (f32.sub
-           (f32.mul
+          (f32x4.sub
+           (f32x4.mul
+            (f32x4.replace_lane 1
+             (f32x4.replace_lane 0
+              (f32x4.splat
+               (local.get $16)
+              )
+              (local.get $17)
+             )
+             (local.get $19)
+            )
             (local.get $7)
-            (local.get $9)
            )
-           (f32.mul
-            (local.get $10)
+           (f32x4.mul
+            (f32x4.replace_lane 3
+             (f32x4.replace_lane 2
+              (local.get $12)
+              (local.get $21)
+             )
+             (local.get $18)
+            )
             (local.get $6)
            )
           )
          )
-         (local.get $12)
-        )
-        (f32.mul
-         (local.get $24)
          (local.get $3)
         )
        )
-       (f32.mul
-        (local.get $16)
-        (local.tee $28
-         (f32.sub
-          (f32.mul
-           (local.get $8)
-           (local.get $6)
-          )
-          (f32.mul
-           (local.get $7)
-           (local.get $11)
-          )
-         )
-        )
-       )
       )
-      (local.get $1)
      )
     )
-    (f32.store offset=60
+    (v128.store offset=32 align=4
      (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.sub
-        (f32.mul
-         (local.get $2)
-         (local.get $28)
-        )
-        (f32.mul
-         (local.tee $29
-          (f32.sub
-           (f32.mul
-            (local.get $14)
-            (local.get $6)
-           )
-           (f32.mul
-            (local.get $7)
-            (local.get $15)
-           )
-          )
-         )
-         (local.get $13)
-        )
-       )
-       (f32.mul
-        (local.get $26)
-        (local.get $4)
-       )
+     (i8x16.shuffle 0 1 2 3 4 5 6 7 24 25 26 27 28 29 30 31
+      (i8x16.shuffle 4 5 6 7 20 21 22 23 0 0 0 0 0 0 0 0
+       (local.get $5)
+       (local.get $2)
       )
-      (local.get $1)
+      (i8x16.shuffle 0 0 0 0 0 0 0 0 4 5 6 7 20 21 22 23
+       (local.get $4)
+       (local.get $1)
+      )
      )
     )
-    (f32.store offset=28
+    (v128.store offset=16 align=4
      (local.get $0)
-     (f32.mul
-      (f32.add
-       (f32.sub
-        (f32.mul
-         (local.get $2)
-         (local.get $27)
-        )
-        (f32.mul
-         (local.get $25)
-         (local.get $4)
-        )
-       )
-       (f32.mul
-        (local.get $29)
-        (local.get $17)
-       )
+     (i8x16.shuffle 0 1 2 3 4 5 6 7 24 25 26 27 28 29 30 31
+      (i8x16.shuffle 8 9 10 11 24 25 26 27 0 0 0 0 0 0 0 0
+       (local.get $2)
+       (local.get $5)
       )
-      (local.get $1)
+      (i8x16.shuffle 0 0 0 0 0 0 0 0 8 9 10 11 24 25 26 27
+       (local.get $1)
+       (local.get $4)
+      )
      )
     )
-    (f32.store offset=36
+    (v128.store align=4
      (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $8)
-         (local.get $20)
-        )
-        (f32.mul
-         (local.get $14)
-         (local.get $19)
-        )
-       )
-       (f32.mul
-        (local.get $10)
-        (local.get $18)
-       )
+     (i8x16.shuffle 0 1 2 3 4 5 6 7 24 25 26 27 28 29 30 31
+      (i8x16.shuffle 0 1 2 3 16 17 18 19 0 0 0 0 0 0 0 0
+       (local.get $5)
+       (local.get $2)
       )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=4
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $7)
-         (local.get $19)
-        )
-        (f32.mul
-         (local.get $8)
-         (local.get $22)
-        )
-       )
-       (f32.mul
-        (local.get $10)
-        (local.get $21)
-       )
+      (i8x16.shuffle 0 0 0 0 0 0 0 0 0 1 2 3 16 17 18 19
+       (local.get $4)
+       (local.get $1)
       )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=48
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $11)
-         (local.get $23)
-        )
-        (f32.mul
-         (local.get $15)
-         (local.get $21)
-        )
-       )
-       (f32.mul
-        (local.get $6)
-        (local.get $18)
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=16
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $6)
-         (local.get $20)
-        )
-        (f32.mul
-         (local.get $15)
-         (local.get $22)
-        )
-       )
-       (f32.mul
-        (local.get $9)
-        (local.get $23)
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=56
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $29)
-         (local.get $12)
-        )
-        (f32.mul
-         (local.get $28)
-         (local.get $5)
-        )
-       )
-       (f32.mul
-        (local.get $26)
-        (local.get $3)
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=24
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $25)
-         (local.get $3)
-        )
-        (f32.mul
-         (local.get $27)
-         (local.get $5)
-        )
-       )
-       (f32.mul
-        (local.get $29)
-        (local.get $16)
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=44
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $13)
-         (local.get $25)
-        )
-        (f32.mul
-         (local.get $2)
-         (local.get $24)
-        )
-       )
-       (f32.mul
-        (local.get $26)
-        (local.get $17)
-       )
-      )
-      (local.get $1)
-     )
-    )
-    (f32.store offset=12
-     (local.get $0)
-     (f32.mul
-      (f32.sub
-       (f32.sub
-        (f32.mul
-         (local.get $24)
-         (local.get $4)
-        )
-        (f32.mul
-         (local.get $13)
-         (local.get $27)
-        )
-       )
-       (f32.mul
-        (local.get $28)
-        (local.get $17)
-       )
-      )
-      (local.get $1)
      )
     )
    )
