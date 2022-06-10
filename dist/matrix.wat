@@ -1970,5 +1970,11 @@
    )
   )
  )
- ;; custom section "producers", size 37
+ ;; custom section ".debug_info", size 1817
+ ;; custom section ".debug_loc", size 4226
+ ;; custom section ".debug_ranges", size 56
+ ;; custom section ".debug_abbrev", size 180
+ ;; custom section ".debug_line", size 47
+ ;; custom section ".debug_str", size 771
+ ;; custom section "producers", size 52
 )
