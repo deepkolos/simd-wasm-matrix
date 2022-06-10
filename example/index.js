@@ -172,6 +172,45 @@ const m30 = new THREE.Matrix4().set(...m0);
 const m31 = new THREE.Matrix4().set(...m1);
 const m32 = new THREE.Matrix4().set(...m0);
 
+// prettier-ignore
+THREE.Matrix4.prototype.invertTransform = function() {
+  // 旋转3x3矩阵转置
+  const a = this.elements;
+  let tmp;
+  tmp = a[1]; a[1] = a[4]; a[4] = tmp;
+  tmp = a[2]; a[2] = a[8]; a[8] = tmp;
+  tmp = a[6]; a[6] = a[9]; a[9] = tmp;
+
+  // scale转置
+  let squareSizeX = a[0] * a[0] + a[4] * a[4] + a[8]  * a[8];
+  let squareSizeY = a[1] * a[1] + a[5] * a[5] + a[9]  * a[9];
+  let squareSizeZ = a[2] * a[2] + a[6] * a[6] + a[10] * a[10];
+
+  let rSquareSizeX = squareSizeX == 0 ? 1 : 1 / squareSizeX;
+  let rSquareSizeY = squareSizeY == 0 ? 1 : 1 / squareSizeY;
+  let rSquareSizeZ = squareSizeZ == 0 ? 1 : 1 / squareSizeZ;
+
+  a[0] *= rSquareSizeX;
+  a[1] *= rSquareSizeY;
+  a[2] *= rSquareSizeZ;
+
+  a[4] *= rSquareSizeX;
+  a[5] *= rSquareSizeY;
+  a[6] *= rSquareSizeZ;
+
+  a[8] *= rSquareSizeX;
+  a[9] *= rSquareSizeY;
+  a[10] *= rSquareSizeZ;
+
+  let Tx = a[12];
+  let Ty = a[13];
+  let Tz = a[14];
+
+  a[12] = -(a[0] * Tx + a[4] * Ty + a[8] * Tz);
+  a[13] = -(a[1] * Tx + a[5] * Ty + a[9] * Tz);
+  a[14] = -(a[2] * Tx + a[6] * Ty + a[10] * Tz);
+}
+
 const benchmarks = {
   'instancing[10^5]': {
     [names[0]]() {
@@ -249,6 +288,9 @@ const benchmarks = {
   invertTransform: {
     [names[0]]() {
       m00.invertTransform();
+    },
+    [names[3]]() {
+      m30.invertTransform();
     },
   },
   transpose: {
