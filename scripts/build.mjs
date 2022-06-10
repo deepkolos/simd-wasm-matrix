@@ -7,12 +7,13 @@ const srcPath = path.resolve(__dirname, '../src');
 const sources = fs.readdirSync(srcPath).filter(i => i.endsWith('.c'));
 const sourcesPath = sources.map(i => `src/${i}`);
 const watchMode = argv.w;
+const prodMode = argv.p;
 
 const flags = [
   watchMode ? '-g' : '',
   `--target=wasm32`,
   '-nostdlib',
-  watchMode ? '' : '-O3',
+  prodMode ? '-O3' : '',
   '-flto',
   '-DNDEBUG',
   '-Wl,--lto-O3',

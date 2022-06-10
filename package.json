@@ -6,10 +6,12 @@
   "scripts": {
     "srv": "http-server -c-1 -o '/example/index.html'",
     "dev": "concurrently 'pnpm dev:ts' 'pnpm dev:cpp'",
+    "dev:prod": "concurrently 'pnpm dev:ts' 'pnpm dev:cpp:prod'",
     "build": "concurrently 'pnpm build:ts' 'pnpm build:cpp'",
     "dev:ts": "rollup -cw",
     "dev:cpp": "zx scripts/build.mjs -w",
-    "build:cpp": "zx scripts/build.mjs",
+    "dev:cpp:prod": "zx scripts/build.mjs -w -p",
+    "build:cpp": "zx scripts/build.mjs -p",
     "build:ts": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
