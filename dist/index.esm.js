@@ -190,9 +190,7 @@ class Matrix4 {
     const te = this.elements;
     const me = matrix.elements;
 
-    for (let i = 0; i < 16; i++) {
-      if (te[i] !== me[i]) return false;
-    }
+    for (let i = 0; i < 16; i++) if (te[i] !== me[i]) return false;
 
     return true;
   }

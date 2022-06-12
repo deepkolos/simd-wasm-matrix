@@ -132,22 +132,30 @@ test('Matrix4.invert', () => {
 test('Matrix4.invertTransform', () => {
   const mat4A = new Matrix4();
   const mat4B = new THREE.Matrix4();
+  const mat4C = new THREE.Matrix4();
   const vec3A = new Vector3(1, 2, 3);
   const vec3B = new THREE.Vector3(1, 2, 3);
   mat4A.makeRotationX(Math.PI / 2);
   mat4B.makeRotationX(Math.PI / 2);
+  mat4C.makeRotationX(Math.PI / 2);
   mat4A.setPosition(1, 2, 3);
   mat4B.setPosition(1, 2, 3);
+  mat4C.setPosition(1, 2, 3);
   mat4A.scale(vec3A);
   mat4B.scale(vec3B);
+  mat4C.scale(vec3B);
 
   mat4A.invertTransform();
   mat4B.invert();
+  mat4C.invertTransform();
   expect(mat4A.elements).toBe(mat4B.elements);
+  expect(mat4C.elements).toBe(mat4B.elements);
 
   mat4A.invertTransform();
   mat4B.invert();
+  mat4C.invertTransform();
   expect(mat4A.elements).toBe(mat4B.elements);
+  expect(mat4C.elements).toBe(mat4B.elements);
 });
 
 //#endregion

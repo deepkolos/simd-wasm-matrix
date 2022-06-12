@@ -54,7 +54,7 @@ export class Matrix4 {
     return this;
   }
 
-  lookAt(eye, target, up) {
+  lookAt(eye: Vector3, target: Vector3, up: Vector3) {
     // const te = this.elements;
     // _z.subVectors(eye, target);
     // if (_z.lengthSq() === 0) {
@@ -91,9 +91,7 @@ export class Matrix4 {
     const te = this.elements;
     const me = matrix.elements;
 
-    for (let i = 0; i < 16; i++) {
-      if (te[i] !== me[i]) return false;
-    }
+    for (let i = 0; i < 16; i++) if (te[i] !== me[i]) return false;
 
     return true;
   }
