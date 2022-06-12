@@ -1,6 +1,8 @@
 # simd-wasm-matrix
 
-一个有 simd 加速和自动 GC 的 matrix4 (V8 非常强大,小函数比 wasm 甚至 simd 还快)
+一个有 simd 加速和自动 GC 的 matrix4 [DEMO](https://deepkolos.github.io/simd-wasm-matrix/example/index.html)
+
+> V8 非常强大,小函数比 wasm 甚至 simd 还快
 
 ## 特性
 
