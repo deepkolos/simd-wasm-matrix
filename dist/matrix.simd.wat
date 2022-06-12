@@ -1,6 +1,7 @@
 (module
  (type $i32_=>_none (func (param i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_=>_none (func (param i32 i32)))
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_f32_=>_none (func (param i32 f32)))
  (type $i32_=>_f32 (func (param i32) (result f32)))
@@ -19,6 +20,7 @@
  (export "matrix4_transpose" (func $4))
  (export "matrix4_invert_transform" (func $5))
  (export "matrix4_multiply_scalar" (func $6))
+ (export "matrix4_scale" (func $7))
  (export "__dso_handle" (global $global$0))
  (export "__data_end" (global $global$1))
  (export "__global_base" (global $global$2))
@@ -940,12 +942,47 @@
    )
   )
  )
- ;; custom section ".debug_info", size 2162
+ (func $7 (param $0 i32) (param $1 i32)
+  (v128.store
+   (local.get $0)
+   (f32x4.mul
+    (v128.load
+     (local.get $0)
+    )
+    (v128.load32_splat
+     (local.get $1)
+    )
+   )
+  )
+  (v128.store offset=16
+   (local.get $0)
+   (f32x4.mul
+    (v128.load offset=16
+     (local.get $0)
+    )
+    (v128.load32_splat offset=4
+     (local.get $1)
+    )
+   )
+  )
+  (v128.store offset=32
+   (local.get $0)
+   (f32x4.mul
+    (v128.load offset=32
+     (local.get $0)
+    )
+    (v128.load32_splat offset=8
+     (local.get $1)
+    )
+   )
+  )
+ )
+ ;; custom section ".debug_info", size 2221
  ;; custom section ".debug_loc", size 3184
- ;; custom section ".debug_ranges", size 56
+ ;; custom section ".debug_ranges", size 64
  ;; custom section ".debug_abbrev", size 371
  ;; custom section ".debug_line", size 132
- ;; custom section ".debug_str", size 702
+ ;; custom section ".debug_str", size 716
  ;; custom section "producers", size 52
  ;; features section: simd
 )

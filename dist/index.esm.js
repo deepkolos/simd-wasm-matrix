@@ -101,10 +101,12 @@ const wasmRegistry = new FinalizationRegistry((ptr) => {
 });
 
 class Matrix4 {
+   __init() {this.isMatrix4 = true;}
   
   
+   __init2() {this._disposed = false;}
 
-  constructor() {
+  constructor() {Matrix4.prototype.__init.call(this);Matrix4.prototype.__init2.call(this);
     this.ptr = malloc(16 * 4);
     this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
     this.identity();
@@ -147,33 +149,52 @@ class Matrix4 {
   }
 
   scale(v) {
-    const te = this.elements;
-    const x = v.x,
-      y = v.y,
-      z = v.z;
-
-    te[0] *= x;
-    te[4] *= y;
-    te[8] *= z;
-    te[1] *= x;
-    te[5] *= y;
-    te[9] *= z;
-    te[2] *= x;
-    te[6] *= y;
-    te[10] *= z;
-    te[3] *= x;
-    te[7] *= y;
-    te[11] *= z;
-
+    wasmExports.matrix4_scale(this.ptr, v.ptr);
     return this;
   }
-  setPosition(x, y, z) {
-    const te = this.elements;
 
-    te[12] = x;
-    te[13] = y;
-    te[14] = z;
-    return this;
+  lookAt(eye, target, up) {
+    // const te = this.elements;
+    // _z.subVectors(eye, target);
+    // if (_z.lengthSq() === 0) {
+    //   // eye and target are in the same position
+    //   _z.z = 1;
+    // }
+    // _z.normalize();
+    // _x.crossVectors(up, _z);
+    // if (_x.lengthSq() === 0) {
+    //   // up and z are parallel
+    //   if (Math.abs(up.z) === 1) {
+    //     _z.x += 0.0001;
+    //   } else {
+    //     _z.z += 0.0001;
+    //   }
+    //   _z.normalize();
+    //   _x.crossVectors(up, _z);
+    // }
+    // _x.normalize();
+    // _y.crossVectors(_z, _x);
+    // te[0] = _x.x;
+    // te[4] = _y.x;
+    // te[8] = _z.x;
+    // te[1] = _x.y;
+    // te[5] = _y.y;
+    // te[9] = _z.y;
+    // te[2] = _x.z;
+    // te[6] = _y.z;
+    // te[10] = _z.z;
+    // return this;
+  }
+
+  equals(matrix) {
+    const te = this.elements;
+    const me = matrix.elements;
+
+    for (let i = 0; i < 16; i++) {
+      if (te[i] !== me[i]) return false;
+    }
+
+    return true;
   }
 
   // --------- getter setter ---------
@@ -199,10 +220,30 @@ class Matrix4 {
     te[3] = n41; te[7] = n42; te[11] = n43; te[15] = n44;
     return this;
   }
+  setFromMatrix3(m) {
+    const me = m.elements;
+    // prettier-ignore
+    this.set(
+			me[ 0 ], me[ 3 ], me[ 6 ], 0,
+			me[ 1 ], me[ 4 ], me[ 7 ], 0,
+			me[ 2 ], me[ 5 ], me[ 8 ], 0,
+			0, 0, 0, 1
+		);
+    return this;
+  }
+  setPosition(x, y, z) {
+    const te = this.elements;
+
+    te[12] = x;
+    te[13] = y;
+    te[14] = z;
+    return this;
+  }
   identity() {
     this.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
     return this;
   }
+
   clone() {
     return new Matrix4().fromArray(this.elements);
   }
@@ -255,16 +296,12 @@ class Matrix4 {
     return array;
   }
 
-  setFromMatrix3(m) {
-    const me = m.elements;
-    // prettier-ignore
-    this.set(
-			me[ 0 ], me[ 3 ], me[ 6 ], 0,
-			me[ 1 ], me[ 4 ], me[ 7 ], 0,
-			me[ 2 ], me[ 5 ], me[ 8 ], 0,
-			0, 0, 0, 1
-		);
-    return this;
+  getMaxScaleOnAxis() {
+    const te = this.elements;
+    const scaleXSq = te[0] * te[0] + te[1] * te[1] + te[2] * te[2];
+    const scaleYSq = te[4] * te[4] + te[5] * te[5] + te[6] * te[6];
+    const scaleZSq = te[8] * te[8] + te[9] * te[9] + te[10] * te[10];
+    return Math.sqrt(Math.max(scaleXSq, scaleYSq, scaleZSq));
   }
   extractBasis(xAxis, yAxis, zAxis) {
     xAxis.setFromMatrixColumn(this, 0);
@@ -282,7 +319,145 @@ class Matrix4 {
 		);
     return this;
   }
+  makeRotationFromEuler(euler) {
+    if (!(euler && euler.isEuler)) {
+      console.error(
+        'THREE.Matrix4: .makeRotationFromEuler() now expects a Euler rotation rather than a Vector3 and order.',
+      );
+    }
 
+    const te = this.elements;
+
+    const x = euler.x,
+      y = euler.y,
+      z = euler.z;
+    const a = Math.cos(x),
+      b = Math.sin(x);
+    const c = Math.cos(y),
+      d = Math.sin(y);
+    const e = Math.cos(z),
+      f = Math.sin(z);
+
+    if (euler.order === 'XYZ') {
+      const ae = a * e,
+        af = a * f,
+        be = b * e,
+        bf = b * f;
+
+      te[0] = c * e;
+      te[4] = -c * f;
+      te[8] = d;
+
+      te[1] = af + be * d;
+      te[5] = ae - bf * d;
+      te[9] = -b * c;
+
+      te[2] = bf - ae * d;
+      te[6] = be + af * d;
+      te[10] = a * c;
+    } else if (euler.order === 'YXZ') {
+      const ce = c * e,
+        cf = c * f,
+        de = d * e,
+        df = d * f;
+
+      te[0] = ce + df * b;
+      te[4] = de * b - cf;
+      te[8] = a * d;
+
+      te[1] = a * f;
+      te[5] = a * e;
+      te[9] = -b;
+
+      te[2] = cf * b - de;
+      te[6] = df + ce * b;
+      te[10] = a * c;
+    } else if (euler.order === 'ZXY') {
+      const ce = c * e,
+        cf = c * f,
+        de = d * e,
+        df = d * f;
+
+      te[0] = ce - df * b;
+      te[4] = -a * f;
+      te[8] = de + cf * b;
+
+      te[1] = cf + de * b;
+      te[5] = a * e;
+      te[9] = df - ce * b;
+
+      te[2] = -a * d;
+      te[6] = b;
+      te[10] = a * c;
+    } else if (euler.order === 'ZYX') {
+      const ae = a * e,
+        af = a * f,
+        be = b * e,
+        bf = b * f;
+
+      te[0] = c * e;
+      te[4] = be * d - af;
+      te[8] = ae * d + bf;
+
+      te[1] = c * f;
+      te[5] = bf * d + ae;
+      te[9] = af * d - be;
+
+      te[2] = -d;
+      te[6] = b * c;
+      te[10] = a * c;
+    } else if (euler.order === 'YZX') {
+      const ac = a * c,
+        ad = a * d,
+        bc = b * c,
+        bd = b * d;
+
+      te[0] = c * e;
+      te[4] = bd - ac * f;
+      te[8] = bc * f + ad;
+
+      te[1] = f;
+      te[5] = a * e;
+      te[9] = -b * e;
+
+      te[2] = -d * e;
+      te[6] = ad * f + bc;
+      te[10] = ac - bd * f;
+    } else if (euler.order === 'XZY') {
+      const ac = a * c,
+        ad = a * d,
+        bc = b * c,
+        bd = b * d;
+
+      te[0] = c * e;
+      te[4] = -f;
+      te[8] = d * e;
+
+      te[1] = ac * f + bd;
+      te[5] = a * e;
+      te[9] = ad * f - bc;
+
+      te[2] = bc * f - ad;
+      te[6] = b * e;
+      te[10] = bd * f + ac;
+    }
+
+    // bottom row
+    te[3] = 0;
+    te[7] = 0;
+    te[11] = 0;
+
+    // last column
+    te[12] = 0;
+    te[13] = 0;
+    te[14] = 0;
+    te[15] = 1;
+
+    return this;
+  }
+  makeRotationFromQuaternion(q) {
+    // return this.compose(_zero, q, _one);
+  }
   makeTranslation(x, y, z) {
     this.set(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
     return this;
@@ -468,11 +643,118 @@ class Matrix4 {
     return this;
   }
 
-  // 支持手动提前释放
+  // 支持手动提前释放C++侧内存
+  dispose() {
+    if (!this._disposed) {
+      wasmRegistry.unregister(this);
+      free(this.ptr);
+      this._disposed = true;
+    }
+  }
+}
+
+class Vector3 {
+  
+   __init() {this.isVector3 = true;}
+  
+
+  constructor(x = 0, y = 0, z = 0) {Vector3.prototype.__init.call(this);
+    this.ptr = malloc(3 * 4);
+    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    wasmRegistry.register(this, this.ptr);
+    this._elements[0] = x;
+    this._elements[1] = y;
+    this._elements[2] = z;
+  }
+
+  // --------- getter setter ---------
+
+  get x() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    return this._elements[0];
+  }
+  get y() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    return this._elements[1];
+  }
+  get z() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    return this._elements[2];
+  }
+  set x(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    this._elements[0] = v;
+  }
+  set y(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    this._elements[1] = v;
+  }
+  set z(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 3);
+    this._elements[2] = v;
+  }
+
   dispose() {
     wasmRegistry.unregister(this);
     free(this.ptr);
   }
 }
 
-export { Matrix4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };
+class Vector4 {
+  
+   __init() {this.isVector3 = true;}
+  
+
+  constructor(x = 0, y = 0, z = 0, w = 1) {Vector4.prototype.__init.call(this);
+    this.ptr = malloc(4 * 4);
+    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    wasmRegistry.register(this, this.ptr);
+    this._elements[0] = x;
+    this._elements[1] = y;
+    this._elements[2] = z;
+    this._elements[3] = z;
+  }
+
+  // --------- getter setter ---------
+
+  get x() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    return this._elements[0];
+  }
+  get y() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    return this._elements[1];
+  }
+  get z() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    return this._elements[2];
+  }
+  get w() {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    return this._elements[3];
+  }
+
+  set x(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    this._elements[0] = v;
+  }
+  set y(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    this._elements[1] = v;
+  }
+  set z(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    this._elements[2] = v;
+  }
+  set w(v) {
+    if (!this._elements.length) this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 4);
+    this._elements[3] = v;
+  }
+
+  dispose() {
+    wasmRegistry.unregister(this);
+    free(this.ptr);
+  }
+}
+
+export { Matrix4, Vector3, Vector4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };

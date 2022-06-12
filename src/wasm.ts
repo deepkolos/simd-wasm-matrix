@@ -5,6 +5,7 @@ interface WasmExports {
   matrix4_invert_transform(ptr: number): void;
   matrix4_transpose(ptr: number): void;
   matrix4_multiply_scalar(ptr: number, v: number): void;
+  matrix4_scale(ptr: number, vector3Ptr: number): void;
   // malloc(size: number): number;
   // free(ptr: number): void;
   memory: WebAssembly.Memory;

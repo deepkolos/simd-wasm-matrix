@@ -1,5 +1,5 @@
 import { benchmark, expect, test } from './lib/test.js';
-import { init, Matrix4 } from '../dist/index.esm.js';
+import { init, Matrix4, Vector3 } from '../dist/index.esm.js';
 import { $ } from './lib/dom.js';
 import * as GLM from '../node_modules/gl-matrix/esm/index.js';
 import * as THREE from './lib/three.module.js';
@@ -132,12 +132,14 @@ test('Matrix4.invert', () => {
 test('Matrix4.invertTransform', () => {
   const mat4A = new Matrix4();
   const mat4B = new THREE.Matrix4();
+  const vec3A = new Vector3(1, 2, 3);
+  const vec3B = new THREE.Vector3(1, 2, 3);
   mat4A.makeRotationX(Math.PI / 2);
   mat4B.makeRotationX(Math.PI / 2);
   mat4A.setPosition(1, 2, 3);
   mat4B.setPosition(1, 2, 3);
-  mat4A.scale({ x: 1, y: 2, z: 3 });
-  mat4B.scale({ x: 1, y: 2, z: 3 });
+  mat4A.scale(vec3A);
+  mat4B.scale(vec3B);
 
   mat4A.invertTransform();
   mat4B.invert();
@@ -159,9 +161,11 @@ let loopCount = 1000000;
 // });
 const m0 = [7, 3, 6, 9, 2, 3, 2, 5, 1, 9, 5, 8, 3, 7, 2, 2];
 const m1 = [2, 5, 7, 8, 4, 8, 3, 9, 2, 5, 4, 9, 5, 6, 3, 1];
+const v0 = [1, 2, 3];
 const m00 = new Matrix4().set(...m0);
 const m01 = new Matrix4().set(...m1);
 const m02 = new Matrix4().set(...m0);
+const v00 = new Vector3(...v0);
 const m10 = GLMWasm.Matrix4.fromValues(...m0);
 const m11 = GLMWasm.Matrix4.fromValues(...m1);
 const m12 = GLMWasm.Matrix4.fromValues(...m0);
@@ -171,6 +175,7 @@ const m22 = GLM.mat4.fromValues(...m0);
 const m30 = new THREE.Matrix4().set(...m0);
 const m31 = new THREE.Matrix4().set(...m1);
 const m32 = new THREE.Matrix4().set(...m0);
+const v30 = new THREE.Vector3(...v0);
 
 // prettier-ignore
 THREE.Matrix4.prototype.invertTransform = function() {
@@ -307,6 +312,20 @@ const benchmarks = {
       m30.transpose();
     },
   },
+  scale: {
+    [names[0]]() {
+      m00.scale(v00);
+    },
+    // [names[1]]() {
+    //   GLMWasm.Matrix4.transpose(m10, m10);
+    // },
+    // [names[2]]() {
+    //   GLM.mat4.transpose(m20, m20);
+    // },
+    [names[3]]() {
+      m30.scale(v30);
+    },
+  },
 };
 
 let benchCount = 10;
@@ -361,4 +380,4 @@ function initUI() {
 }
 
 initUI();
-bench();
+setTimeout(bench, 0);

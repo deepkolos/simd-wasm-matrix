@@ -1,6 +1,7 @@
 (module
  (type $i32_=>_none (func (param i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_=>_none (func (param i32 i32)))
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_f32_=>_none (func (param i32 f32)))
  (type $i32_=>_f32 (func (param i32) (result f32)))
@@ -19,6 +20,7 @@
  (export "matrix4_invert_transform" (func $4))
  (export "matrix4_transpose" (func $5))
  (export "matrix4_multiply_scalar" (func $6))
+ (export "matrix4_scale" (func $7))
  (export "__dso_handle" (global $global$0))
  (export "__data_end" (global $global$1))
  (export "__global_base" (global $global$2))
@@ -1970,11 +1972,145 @@
    )
   )
  )
- ;; custom section ".debug_info", size 1817
+ (func $7 (param $0 i32) (param $1 i32)
+  (f32.store
+   (local.get $0)
+   (f32.mul
+    (f32.load
+     (local.get $1)
+    )
+    (f32.load
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=4
+   (local.get $0)
+   (f32.mul
+    (f32.load
+     (local.get $1)
+    )
+    (f32.load offset=4
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=8
+   (local.get $0)
+   (f32.mul
+    (f32.load
+     (local.get $1)
+    )
+    (f32.load offset=8
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=12
+   (local.get $0)
+   (f32.mul
+    (f32.load
+     (local.get $1)
+    )
+    (f32.load offset=12
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=16
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=4
+     (local.get $1)
+    )
+    (f32.load offset=16
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=20
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=4
+     (local.get $1)
+    )
+    (f32.load offset=20
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=24
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=4
+     (local.get $1)
+    )
+    (f32.load offset=24
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=28
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=4
+     (local.get $1)
+    )
+    (f32.load offset=28
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=32
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=8
+     (local.get $1)
+    )
+    (f32.load offset=32
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=36
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=8
+     (local.get $1)
+    )
+    (f32.load offset=36
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=40
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=8
+     (local.get $1)
+    )
+    (f32.load offset=40
+     (local.get $0)
+    )
+   )
+  )
+  (f32.store offset=44
+   (local.get $0)
+   (f32.mul
+    (f32.load offset=8
+     (local.get $1)
+    )
+    (f32.load offset=44
+     (local.get $0)
+    )
+   )
+  )
+ )
+ ;; custom section ".debug_info", size 1876
  ;; custom section ".debug_loc", size 4226
- ;; custom section ".debug_ranges", size 56
+ ;; custom section ".debug_ranges", size 64
  ;; custom section ".debug_abbrev", size 180
  ;; custom section ".debug_line", size 47
- ;; custom section ".debug_str", size 771
+ ;; custom section ".debug_str", size 787
  ;; custom section "producers", size 52
 )
