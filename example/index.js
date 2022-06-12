@@ -1,7 +1,7 @@
 import { benchmark, expect, test } from './lib/test.js';
 import { init, Matrix4, Vector3 } from '../dist/index.esm.js';
 import { $ } from './lib/dom.js';
-import * as GLM from '../node_modules/gl-matrix/esm/index.js';
+import * as GLM from './lib/gl-matrix/index.js';
 import * as THREE from './lib/three.module.js';
 
 const { glMatrixWasm: GLMWasm } = window;
