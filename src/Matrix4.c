@@ -57,84 +57,85 @@ void matrix4_multiply(float const a[16], float const b[16], float out[16]) {
   wasm_v128_store(out + 12, o_col_3);
 }
 
-float matrix4_determinant(float const te[16]) {
-  // clang-format off
-  // float n11 = te[0], n21 = te[1], n31 = te[2], n41 = te[3], n12 = te[4],
-  //       n22 = te[5], n32 = te[6], n42 = te[7], n13 = te[8], n23 = te[9],
-  //       n33 = te[10], n43 = te[11], n14 = te[12], n24 = te[13], n34 = te[14],
-  //       n44 = te[15],
-  //       //      l1     r1    l2    r2     m1     l1    r3    l3    r2     m2    l2     r3    l3    l1     m3
-  //       t11 =   (n34 * n23 - n33 * n24) * n42 - (n34 * n22 - n32 * n24) * n43 + (n33 * n22 - n32 * n23) * n44,
-  //       t12 =   (n14 * n33 - n13 * n34) * n42 - (n14 * n32 - n12 * n34) * n43 + (n13 * n32 - n12 * n33) * n44,
-  //       t13 = -((n14 * n23 - n13 * n24) * n42 - (n14 * n22 - n12 * n24) * n43 + (n13 * n22 - n12 * n23) * n44),
-  //       t14 =   (n14 * n23 - n13 * n24) * n32 - (n14 * n22 - n12 * n24) * n33 + (n13 * n22 - n12 * n23) * n34;
+float matrix4_determinant(v128_t const a_[4]) {
+  // float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+  // float a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+  // float a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+  // float a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+  v128_t a0_ = a_[0];
+  v128_t a1_ = a_[1];
+  v128_t a2_ = a_[2];
+  v128_t a3_ = a_[3];
 
-  // float det = n11 * t11 + n21 * t12 + n31 * t13 + n41 * t14;
-  // clang-format on
+  // v128_t a0_ = wasm_v128_load(a);
+  // v128_t a1_ = wasm_v128_load(a + 4);
+  // v128_t a2_ = wasm_v128_load(a + 8);
+  // v128_t a3_ = wasm_v128_load(a + 12);
 
-  float n11 = te[0], n21 = te[1], n31 = te[2], n41 = te[3], n12 = te[4],
-        n22 = te[5], n32 = te[6], n42 = te[7], n13 = te[8], n23 = te[9],
-        n33 = te[10], n43 = te[11], n14 = te[12], n24 = te[13], n34 = te[14],
-        n44 = te[15];
+  // 出奇的有规律的一般都是好算法...
+  v128_t l0, l1, l2, r0, r1, r2, r;
 
-  v128_t n_1 = wasm_v128_load(te);
-  //   v128_t l1, l2, l3, r1, r2, r3, m1, m2, m3, s1, s2, s3, t1_;
-  v128_t l1, l2, l3, r1, r2, r3, m, s1, s2, s3, t1_;
+  l0 = wasm_i32x4_shuffle(a0_, a0_, 0, 0, 0, 1);
+  l1 = wasm_i32x4_shuffle(a0_, a0_, 1, 2, 3, 2);
+  r0 = wasm_i32x4_shuffle(a1_, a1_, 1, 2, 3, 2);
+  r1 = wasm_i32x4_shuffle(a1_, a1_, 0, 0, 0, 1);
+  v128_t s0 = wasm_f32x4_sub(wasm_f32x4_mul(l0, r0), wasm_f32x4_mul(l1, r1));
 
-  l1 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n14), 0, n34);
-  l2 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n13), 0, n33);
-  l3 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n12), 0, n32);
-  r1 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n23), 1, n33);
-  r2 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n24), 1, n34);
-  r3 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n22), 1, n32);
-  //   m1 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n42), 3, n32);
-  //   m2 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n43), 3, n33);
-  //   m3 = wasm_f32x4_replace_lane(wasm_f32x4_splat(n44), 3, n34);
+  // // s0       l0    r0    l1    r1
+  // float b00 = a00 * a11 - a01 * a10;
+  // float b01 = a00 * a12 - a02 * a10;
+  // float b02 = a00 * a13 - a03 * a10;
+  // float b03 = a01 * a12 - a02 * a11;
 
-  m = wasm_f32x4_replace_lane(wasm_f32x4_splat(n42), 3, n32);
-  s1 = wasm_f32x4_mul(l1, r1);
-  s1 = wasm_f32x4_sub(s1, wasm_f32x4_mul(l2, r2));
-  s1 = wasm_f32x4_mul(s1, m);
+  l0 = wasm_i32x4_shuffle(a0_, a2_, 1, 2, 4, 4);
+  l1 = wasm_i32x4_shuffle(a0_, a2_, 3, 3, 5, 6);
+  r0 = wasm_i32x4_shuffle(a1_, a3_, 3, 3, 5, 6);
+  r1 = wasm_i32x4_shuffle(a1_, a3_, 1, 2, 4, 4);
+  v128_t s1 = wasm_f32x4_sub(wasm_f32x4_mul(l0, r0), wasm_f32x4_mul(l1, r1));
 
-  m = wasm_f32x4_replace_lane(wasm_f32x4_splat(n43), 3, n33);
-  s2 = wasm_f32x4_mul(l1, r3);
-  s2 = wasm_f32x4_sub(s2, wasm_f32x4_mul(l3, r2));
-  s2 = wasm_f32x4_mul(s2, m);
+  // // s1       l0    r0    l1    r1
+  // float b04 = a01 * a13 - a03 * a11;
+  // float b05 = a02 * a13 - a03 * a12;
+  // float b06 = a20 * a31 - a21 * a30;
+  // float b07 = a20 * a32 - a22 * a30;
 
-  m = wasm_f32x4_replace_lane(wasm_f32x4_splat(n44), 3, n34);
-  s3 = wasm_f32x4_mul(l2, r3);
-  s3 = wasm_f32x4_sub(s3, wasm_f32x4_mul(l3, r1));
-  s3 = wasm_f32x4_mul(s3, m);
+  l0 = wasm_i32x4_shuffle(a2_, a2_, 0, 1, 1, 2);
+  l1 = wasm_i32x4_shuffle(a2_, a2_, 3, 2, 3, 3);
+  r0 = wasm_i32x4_shuffle(a3_, a3_, 3, 2, 3, 3);
+  r1 = wasm_i32x4_shuffle(a3_, a3_, 0, 1, 1, 2);
+  v128_t s2 = wasm_f32x4_sub(wasm_f32x4_mul(l0, r0), wasm_f32x4_mul(l1, r1));
 
-  t1_ = wasm_f32x4_mul(wasm_f32x4_add(wasm_f32x4_sub(s1, s2), s3),
-                       wasm_f32x4_const(1, 1, -1, 1));
+  // // s2       l0    r0    l1    r1
+  // float b08 = a20 * a33 - a23 * a30;
+  // float b09 = a21 * a32 - a22 * a31;
+  // float b10 = a21 * a33 - a23 * a31;
+  // float b11 = a22 * a33 - a23 * a32;
 
-  // dot from glm
-  v128_t mul0 = wasm_f32x4_mul(n_1, t1_);
+  v128_t d0l = wasm_i32x4_shuffle(s0, s1, 0, 5, 2, 3);
+  v128_t d0r = wasm_i32x4_shuffle(s2, s1, 3, 6, 1, 0);
+  v128_t d1l = wasm_i32x4_shuffle(s0, s1, 4, 1, 4, 1);
+  v128_t d1r = wasm_i32x4_shuffle(s1, s2, 3, 6, 3, 6);
+  v128_t d0 = wasm_f32x4_dot_xyzw(d0l, d0r);
+  v128_t d1 = wasm_f32x4_dot_xy__(d1l, d1r);
+  v128_t v_det = wasm_f32x4_sub(d0, d1);
 
-  // 貌似没明显性能差距
-  // return wasm_f32x4_extract_lane(mul0, 0) + wasm_f32x4_extract_lane(mul0, 1)
-  // +
-  //        wasm_f32x4_extract_lane(mul0, 2) + wasm_f32x4_extract_lane(mul0, 3);
-
-  v128_t swp0 = wasm_i32x4_shuffle(mul0, mul0, 3, 2, 1, 0);
-  v128_t add0 = wasm_f32x4_add(mul0, swp0); // 0, 1, 2, 3
-  v128_t swp1 = wasm_i32x4_shuffle(add0, add0, 1, 0, 3, 2);
-  v128_t add1 = wasm_f32x4_add(add0, swp1); // 0, 1, 2, 3
-
-  return wasm_f32x4_extract_lane(add1, 0);
+  return wasm_f32x4_extract_lane(v_det, 0);
 }
 
-void matrix4_invert(float a[16]) {
-  float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
-  float a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
-  float a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
-  float a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+void matrix4_invert(v128_t a_[4]) {
+  // float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+  // float a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+  // float a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+  // float a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
 
-  v128_t a0_ = wasm_v128_load(a);
-  v128_t a1_ = wasm_v128_load(a + 4);
-  v128_t a2_ = wasm_v128_load(a + 8);
-  v128_t a3_ = wasm_v128_load(a + 12);
+  // v128_t a0_ = wasm_v128_load(a);
+  // v128_t a1_ = wasm_v128_load(a + 4);
+  // v128_t a2_ = wasm_v128_load(a + 8);
+  // v128_t a3_ = wasm_v128_load(a + 12);
+  v128_t a0_ = a_[0];
+  v128_t a1_ = a_[1];
+  v128_t a2_ = a_[2];
+  v128_t a3_ = a_[3];
 
   // 出奇的有规律的一般都是好算法...
   v128_t l0, l1, l2, r0, r1, r2, r;
@@ -283,10 +284,14 @@ void matrix4_invert(float a[16]) {
   v128_t n3_ = wasm_i32x4_shuffle(tmp2, tmp3, 0, 1, 4, 5);
   v128_t n4_ = wasm_i32x4_shuffle(tmp2, tmp3, 2, 3, 6, 7);
 
-  wasm_v128_store(a, n1_);
-  wasm_v128_store(a + 4, n2_);
-  wasm_v128_store(a + 8, n3_);
-  wasm_v128_store(a + 12, n4_);
+  // wasm_v128_store(a, n1_);
+  // wasm_v128_store(a + 4, n2_);
+  // wasm_v128_store(a + 8, n3_);
+  // wasm_v128_store(a + 12, n4_);
+  a_[0] = n1_;
+  a_[1] = n2_;
+  a_[2] = n3_;
+  a_[3] = n4_;
 }
 
 void matrix4_transpose(v128_t a[4]) {

@@ -20,12 +20,12 @@
 | function         | simd-wasm-matrix | gl-matrix-wasm | gl-matrix | three   |
 | ---------------- | ---------------- | -------------- | --------- | ------- |
 | instancing[10^5] | 29.10ms          | 27.30ms        | 5.30ms    | 1.90ms  |
-| multiply         | 23.40ms          | 33.40ms        | 48.00ms   | 36.00ms |
-| multiplyScalar   | 13.70ms          | 23.60ms        | 22.00ms   | 13.50ms |
-| determinant      | 22.60ms          | 25.90ms        | 10.80ms   | 26.40ms |
-| invert           | 33.60ms          | 40.00ms        | 48.60ms   | 47.80ms |
+| multiply         | 17.40ms          | 31.40ms        | 45.90ms   | 34.70ms |
+| multiplyScalar   | 11.90ms          | 21.60ms        | 21.00ms   | 11.50ms |
+| determinant      | 16.70ms          | 25.90ms        | 10.80ms   | 26.40ms |
+| invert           | 28.50ms          | 40.00ms        | 48.60ms   | 47.80ms |
 | invertTransform  | 15.70ms          |                |           | 20.50ms |
-| transpose        | 14.30ms          | 23.30ms        | 15.50ms   | 11.90ms |
+| transpose        | 13.50ms          | 19.60ms        | 13.00ms   | 11.50ms |
 
 ## 体积
 

@@ -186,145 +186,138 @@
   (local $1 v128)
   (local $2 v128)
   (local $3 v128)
-  (local $4 f32)
-  (local $5 f32)
-  (local $6 f32)
-  (local $7 v128)
+  (local $4 v128)
+  (local $5 v128)
   (f32x4.extract_lane 0
-   (f32x4.add
-    (local.tee $1
-     (f32x4.add
-      (local.tee $1
-       (f32x4.mul
-        (v128.load align=1
-         (local.get $0)
-        )
+   (f32x4.sub
+    (f32x4.add
+     (local.tee $2
+      (f32x4.add
+       (local.tee $2
         (f32x4.mul
-         (f32x4.add
-          (f32x4.mul
+         (i8x16.shuffle 0 1 2 3 20 21 22 23 8 9 10 11 12 13 14 15
+          (local.tee $5
            (f32x4.sub
             (f32x4.mul
-             (local.tee $1
-              (f32x4.replace_lane 1
-               (v128.load32_splat offset=20
+             (i8x16.shuffle 0 1 2 3 0 1 2 3 0 1 2 3 4 5 6 7
+              (local.tee $1
+               (v128.load
                 (local.get $0)
                )
-               (local.tee $4
-                (f32.load offset=24
-                 (local.get $0)
-                )
-               )
               )
+              (local.get $1)
              )
-             (local.tee $2
-              (f32x4.replace_lane 0
-               (v128.load32_splat offset=32
+             (i8x16.shuffle 4 5 6 7 8 9 10 11 12 13 14 15 8 9 10 11
+              (local.tee $2
+               (v128.load offset=16
                 (local.get $0)
                )
-               (local.tee $5
-                (f32.load offset=40
-                 (local.get $0)
-                )
-               )
               )
+              (local.get $2)
              )
             )
             (f32x4.mul
-             (local.tee $7
-              (f32x4.replace_lane 0
-               (v128.load32_splat offset=16
-                (local.get $0)
-               )
-               (local.get $4)
-              )
+             (i8x16.shuffle 4 5 6 7 8 9 10 11 12 13 14 15 8 9 10 11
+              (local.get $1)
+              (local.get $1)
              )
-             (local.tee $3
-              (f32x4.replace_lane 1
-               (v128.load32_splat offset=36
-                (local.get $0)
-               )
-               (local.get $5)
-              )
-             )
-            )
-           )
-           (f32x4.replace_lane 3
-            (v128.load32_splat offset=60
-             (local.get $0)
-            )
-            (local.tee $6
-             (f32.load offset=56
-              (local.get $0)
+             (i8x16.shuffle 0 1 2 3 0 1 2 3 0 1 2 3 4 5 6 7
+              (local.get $2)
+              (local.get $2)
              )
             )
            )
           )
-          (f32x4.sub
-           (f32x4.mul
-            (f32x4.replace_lane 3
-             (v128.load32_splat offset=28
-              (local.get $0)
-             )
-             (local.get $4)
-            )
-            (f32x4.sub
-             (f32x4.mul
-              (local.get $3)
+          (local.tee $1
+           (f32x4.sub
+            (f32x4.mul
+             (i8x16.shuffle 4 5 6 7 8 9 10 11 16 17 18 19 16 17 18 19
+              (local.get $1)
               (local.tee $3
-               (f32x4.replace_lane 0
-                (v128.load32_splat offset=48
-                 (local.get $0)
-                )
-                (local.get $6)
+               (v128.load offset=32
+                (local.get $0)
                )
               )
              )
-             (f32x4.mul
+             (i8x16.shuffle 12 13 14 15 12 13 14 15 20 21 22 23 24 25 26 27
               (local.get $2)
-              (local.tee $2
-               (f32x4.replace_lane 1
-                (v128.load32_splat offset=52
-                 (local.get $0)
-                )
-                (local.get $6)
+              (local.tee $4
+               (v128.load offset=48
+                (local.get $0)
                )
               )
              )
             )
-           )
-           (f32x4.mul
-            (f32x4.replace_lane 3
-             (v128.load32_splat offset=44
-              (local.get $0)
-             )
-             (local.get $5)
-            )
-            (f32x4.sub
-             (f32x4.mul
+            (f32x4.mul
+             (i8x16.shuffle 12 13 14 15 12 13 14 15 20 21 22 23 24 25 26 27
               (local.get $1)
               (local.get $3)
              )
-             (f32x4.mul
-              (local.get $7)
+             (i8x16.shuffle 4 5 6 7 8 9 10 11 16 17 18 19 16 17 18 19
               (local.get $2)
+              (local.get $4)
              )
             )
            )
           )
          )
-         (v128.const i32x4 0x3f800000 0x3f800000 0xbf800000 0x3f800000)
+         (i8x16.shuffle 12 13 14 15 24 25 26 27 4 5 6 7 0 1 2 3
+          (local.tee $3
+           (f32x4.sub
+            (f32x4.mul
+             (i8x16.shuffle 0 1 2 3 4 5 6 7 4 5 6 7 8 9 10 11
+              (local.get $3)
+              (local.get $3)
+             )
+             (i8x16.shuffle 12 13 14 15 8 9 10 11 12 13 14 15 12 13 14 15
+              (local.get $4)
+              (local.get $4)
+             )
+            )
+            (f32x4.mul
+             (i8x16.shuffle 12 13 14 15 8 9 10 11 12 13 14 15 12 13 14 15
+              (local.get $3)
+              (local.get $3)
+             )
+             (i8x16.shuffle 0 1 2 3 4 5 6 7 4 5 6 7 8 9 10 11
+              (local.get $4)
+              (local.get $4)
+             )
+            )
+           )
+          )
+          (local.get $1)
+         )
         )
        )
-      )
-      (i8x16.shuffle 12 13 14 15 8 9 10 11 4 5 6 7 0 1 2 3
-       (local.get $1)
-       (local.get $1)
+       (i8x16.shuffle 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        (local.get $2)
+        (local.get $2)
+       )
       )
      )
+     (i8x16.shuffle 4 5 6 7 0 1 2 3 20 21 22 23 16 17 18 19
+      (local.get $2)
+      (local.get $2)
+     )
     )
-    (i8x16.shuffle 4 5 6 7 0 1 2 3 12 13 14 15 8 9 10 11
-     (local.get $1)
-     (local.get $1)
+    (f32x4.add
+     (local.tee $1
+      (f32x4.mul
+       (i8x16.shuffle 16 17 18 19 4 5 6 7 16 17 18 19 4 5 6 7
+        (local.get $5)
+        (local.get $1)
+       )
+       (i8x16.shuffle 12 13 14 15 24 25 26 27 12 13 14 15 24 25 26 27
+        (local.get $1)
+        (local.get $3)
+       )
+      )
+     )
+     (i8x16.shuffle 4 5 6 7 0 1 2 3 20 21 22 23 16 17 18 19
+      (local.get $1)
+      (local.get $1)
+     )
     )
    )
   )
@@ -357,7 +350,7 @@
                (f32x4.mul
                 (i8x16.shuffle 0 1 2 3 0 1 2 3 0 1 2 3 4 5 6 7
                  (local.tee $2
-                  (v128.load align=1
+                  (v128.load
                    (local.get $0)
                   )
                  )
@@ -365,7 +358,7 @@
                 )
                 (i8x16.shuffle 4 5 6 7 8 9 10 11 12 13 14 15 8 9 10 11
                  (local.tee $1
-                  (v128.load offset=16 align=1
+                  (v128.load offset=16
                    (local.get $0)
                   )
                  )
@@ -390,7 +383,7 @@
                 (i8x16.shuffle 4 5 6 7 8 9 10 11 16 17 18 19 16 17 18 19
                  (local.get $2)
                  (local.tee $5
-                  (v128.load offset=32 align=1
+                  (v128.load offset=32
                    (local.get $0)
                   )
                  )
@@ -398,7 +391,7 @@
                 (i8x16.shuffle 12 13 14 15 12 13 14 15 20 21 22 23 24 25 26 27
                  (local.get $1)
                  (local.tee $3
-                  (v128.load offset=48 align=1
+                  (v128.load offset=48
                    (local.get $0)
                   )
                  )
@@ -481,7 +474,7 @@
     (f32.const 0)
    )
    (block
-    (v128.store offset=48 align=1
+    (v128.store offset=48
      (local.get $0)
      (i8x16.shuffle 8 9 10 11 12 13 14 15 24 25 26 27 28 29 30 31
       (local.tee $9
@@ -665,14 +658,14 @@
       )
      )
     )
-    (v128.store offset=32 align=1
+    (v128.store offset=32
      (local.get $0)
      (i8x16.shuffle 0 1 2 3 4 5 6 7 16 17 18 19 20 21 22 23
       (local.get $9)
       (local.get $1)
      )
     )
-    (v128.store offset=16 align=1
+    (v128.store offset=16
      (local.get $0)
      (i8x16.shuffle 8 9 10 11 12 13 14 15 24 25 26 27 28 29 30 31
       (local.tee $1
@@ -689,7 +682,7 @@
       )
      )
     )
-    (v128.store align=1
+    (v128.store
      (local.get $0)
      (i8x16.shuffle 0 1 2 3 4 5 6 7 16 17 18 19 20 21 22 23
       (local.get $1)
@@ -947,12 +940,12 @@
    )
   )
  )
- ;; custom section ".debug_info", size 2352
- ;; custom section ".debug_loc", size 3168
+ ;; custom section ".debug_info", size 2162
+ ;; custom section ".debug_loc", size 3184
  ;; custom section ".debug_ranges", size 56
  ;; custom section ".debug_abbrev", size 371
  ;; custom section ".debug_line", size 132
- ;; custom section ".debug_str", size 856
+ ;; custom section ".debug_str", size 702
  ;; custom section "producers", size 52
  ;; features section: simd
 )
