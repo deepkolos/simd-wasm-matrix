@@ -18,7 +18,7 @@
 
 **需关闭 devtools 测试** LoopCount: 10^6
 
-> THREE.Matrix4.invertTransform 测试代码 patch 上去的
+> THREE.Matrix4.invertTransform 测试代码 patch 上去的 见[PR](https://github.com/mrdoob/three.js/pull/24228)
 
 | function         | simd-wasm-matrix | gl-matrix-wasm | gl-matrix | three   |
 | ---------------- | ---------------- | -------------- | --------- | ------- |
