@@ -755,4 +755,93 @@ class Vector4 {
   }
 }
 
-export { Matrix4, Vector3, Vector4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };
+/**
+ * covert three matrix4 to wasm
+ * @param {*} Matrix4Ctor 
+ * @returns {Matrix4}
+ */
+function convertTHREEMatrix4(Matrix4Ctor) {
+  class Matrix4Wasm extends Matrix4Ctor {
+    
+    
+     __init() {this._disposed = false;}
+
+    constructor() {
+      super();Matrix4Wasm.prototype.__init.call(this);      this.ptr = malloc(16 * 4);
+      this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
+      this.identity();
+      wasmRegistry.register(this, this.ptr);
+    }
+
+    // --------- operation ---------
+
+    multiply(mat) {
+      wasmExports.matrix4_multiply(this.ptr, mat.ptr, this.ptr);
+      return this;
+    }
+
+    multiply(mat) {
+      wasmExports.matrix4_multiply(this.ptr, mat.ptr, this.ptr);
+      return this;
+    }
+    premultiply(mat) {
+      wasmExports.matrix4_multiply(mat.ptr, this.ptr, this.ptr);
+      return this;
+    }
+    multiplyMatrices(a, b) {
+      wasmExports.matrix4_multiply(a.ptr, b.ptr, this.ptr);
+      return this;
+    }
+    multiplyScalar(s) {
+      wasmExports.matrix4_multiply_scalar(this.ptr, s);
+      return this;
+    }
+
+    determinant() {
+      return wasmExports.matrix4_determinant(this.ptr);
+    }
+    transpose() {
+      wasmExports.matrix4_transpose(this.ptr);
+      return this;
+    }
+    invert() {
+      wasmExports.matrix4_invert(this.ptr);
+      return this;
+    }
+    invertTransform() {
+      wasmExports.matrix4_invert_transform(this.ptr);
+      return this;
+    }
+
+    // --------- getter setter ---------
+
+    get elements() {
+      if (!this._elements.length) {
+        this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
+      }
+      return this._elements;
+    }
+
+    set elements(v) {
+      if (!this._elements) return;
+      if (!this._elements.length) {
+        this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
+      }
+      for (let len = Math.min(v.length, 16), i = 0; i < len; i++) {
+        this._elements[i] = v[i];
+      }
+    }
+
+    // 支持手动提前释放C++侧内存
+    dispose() {
+      if (!this._disposed) {
+        wasmRegistry.unregister(this);
+        free(this.ptr);
+        this._disposed = true;
+      }
+    }
+  }
+  return Matrix4Wasm ;
+}
+
+export { Matrix4, Vector3, Vector4, convertTHREEMatrix4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };

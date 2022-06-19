@@ -11,6 +11,7 @@
         --c2: rgb(66 136 152);
         --c3: rgb(143 86 147);
         --c4: rgb(86, 147, 129);
+        --c5: rgb(188, 105, 22);
         max-width: 900px;
         margin: 0 auto;
       }
@@ -94,6 +95,9 @@
       .info-item:nth-child(4) {
         background-color: var(--c4);
       }
+      .info-item:nth-child(5) {
+        background-color: var(--c5);
+      }
 
       .log-can {
         display: flex;
@@ -121,6 +125,9 @@
       }
       .log-item:nth-child(5) {
         background-color: var(--c4);
+      }
+      .log-item:nth-child(6) {
+        background-color: var(--c5);
       }
     </style>
   </head>
@@ -159,6 +166,7 @@
         <div class="info-item">gl-matrix-wasm@0.8.0</div>
         <div class="info-item">gl-matrix@3.4.3</div>
         <div class="info-item">three@0.141.0</div>
+        <div class="info-item">three-patch</div>
       </div>
 
       <div class="log-can blk">
@@ -167,6 +175,7 @@
         <div class="log-item" id="log-gl-matrix-wasm"></div>
         <div class="log-item" id="log-gl-matrix"></div>
         <div class="log-item" id="log-three"></div>
+        <div class="log-item" id="log-three-patch"></div>
       </div>
     </div>
 

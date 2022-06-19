@@ -25,6 +25,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-sucrase": "^4.0.4",
+    "@types/three": "^0.141.0",
     "chokidar": "^3.5.3",
     "concurrently": "^7.2.1",
     "gl-matrix": "^3.4.3",

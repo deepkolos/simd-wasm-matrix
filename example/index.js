@@ -1,5 +1,5 @@
 import { benchmark, expect, test } from './lib/test.js';
-import { init, Matrix4, Vector3 } from '../dist/index.esm.js';
+import { init, Matrix4, Vector3, convertTHREEMatrix4 } from '../dist/index.esm.js';
 import { $ } from './lib/dom.js';
 import * as GLM from './lib/gl-matrix/index.js';
 import * as THREE from './lib/three.module.js';
@@ -10,6 +10,8 @@ const noSIMD = new URLSearchParams(location.search).get('nosimd') === 'true';
 
 await GLMWasm.init();
 await init({ wasm: '../dist/matrix.wasm', simdWasm: '../dist/matrix.simd.wasm', noSIMD });
+
+const THREEMatrix4Wasm = convertTHREEMatrix4(THREE.Matrix4);
 
 //#region tests
 
@@ -158,9 +160,22 @@ test('Matrix4.invertTransform', () => {
   expect(mat4C.elements).toBe(mat4B.elements);
 });
 
+test('THREEMatrix4Wasm.multiply', () => {
+  const mat4A = new THREEMatrix4Wasm();
+  const mat4B = new THREEMatrix4Wasm();
+  mat4A.set(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53);
+  mat4B.set(59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131);
+  mat4A.multiply(mat4B);
+
+  expect(mat4A.elements).toBe([
+    1585, 5318, 10514, 15894, 1655, 5562, 11006, 16634, 1787, 5980, 11840, 17888, 1861, 6246, 12378,
+    18710,
+  ]);
+});
+
 //#endregion
 
-const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix', 'three'];
+const names = ['simd-wasm-matrix', 'gl-matrix-wasm', 'gl-matrix', 'three', 'three-patch'];
 const nodes = names.map(i => $(`log-${i}`));
 let loopCount = 1000000;
 
@@ -177,13 +192,19 @@ const v00 = new Vector3(...v0);
 const m10 = GLMWasm.Matrix4.fromValues(...m0);
 const m11 = GLMWasm.Matrix4.fromValues(...m1);
 const m12 = GLMWasm.Matrix4.fromValues(...m0);
+const v10 = GLMWasm.Vector3.fromValues(...v0);
 const m20 = GLM.mat4.fromValues(...m0);
 const m21 = GLM.mat4.fromValues(...m1);
 const m22 = GLM.mat4.fromValues(...m0);
+const v20 = GLM.vec3.fromValues(...v0);
 const m30 = new THREE.Matrix4().set(...m0);
 const m31 = new THREE.Matrix4().set(...m1);
 const m32 = new THREE.Matrix4().set(...m0);
 const v30 = new THREE.Vector3(...v0);
+const m40 = new THREEMatrix4Wasm().set(...m0);
+const m41 = new THREEMatrix4Wasm().set(...m1);
+const m42 = new THREEMatrix4Wasm().set(...m0);
+const v40 = new THREE.Vector3(...v0);
 
 // prettier-ignore
 THREE.Matrix4.prototype.invertTransform = function() {
@@ -255,6 +276,9 @@ const benchmarks = {
     [names[3]]() {
       m32.multiplyMatrices(m30, m31);
     },
+    [names[4]]() {
+      m42.multiplyMatrices(m40, m41);
+    },
   },
   multiplyScalar: {
     [names[0]]() {
@@ -268,6 +292,9 @@ const benchmarks = {
     },
     [names[3]]() {
       m32.multiplyScalar(2);
+    },
+    [names[4]]() {
+      m42.multiplyScalar(2);
     },
   },
   determinant: {
@@ -283,6 +310,9 @@ const benchmarks = {
     [names[3]]() {
       m32.determinant();
     },
+    [names[4]]() {
+      m42.determinant();
+    },
   },
   invert: {
     [names[0]]() {
@@ -297,6 +327,9 @@ const benchmarks = {
     [names[3]]() {
       m30.invert();
     },
+    [names[4]]() {
+      m40.invert();
+    },
   },
   invertTransform: {
     [names[0]]() {
@@ -304,6 +337,9 @@ const benchmarks = {
     },
     [names[3]]() {
       m30.invertTransform();
+    },
+    [names[4]]() {
+      m40.invertTransform();
     },
   },
   transpose: {
@@ -319,19 +355,25 @@ const benchmarks = {
     [names[3]]() {
       m30.transpose();
     },
+    [names[4]]() {
+      m30.transpose();
+    },
   },
   scale: {
     [names[0]]() {
       m00.scale(v00);
     },
-    // [names[1]]() {
-    //   GLMWasm.Matrix4.transpose(m10, m10);
-    // },
-    // [names[2]]() {
-    //   GLM.mat4.transpose(m20, m20);
-    // },
+    [names[1]]() {
+      GLMWasm.Matrix4.scale(m10, m10, v10);
+    },
+    [names[2]]() {
+      GLM.mat4.scale(m20, m20, v20);
+    },
     [names[3]]() {
       m30.scale(v30);
+    },
+    [names[4]]() {
+      m40.scale(v40);
     },
   },
 };
