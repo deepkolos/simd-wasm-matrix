@@ -262,6 +262,10 @@ const benchmarks = {
     [names[3]]() {
       const mat4 = new THREE.Matrix4();
     },
+    [names[4]]() {
+      const mat4 = new THREEMatrix4Wasm();
+      mat4.dispose();
+    },
   },
   multiply: {
     [names[0]]() {
