@@ -249,7 +249,7 @@ const benchmarks = {
   'instancing[10^5]': {
     [names[0]]() {
       const mat4 = new Matrix4();
-      mat4.dispose();
+      // mat4.dispose();
     },
     [names[1]]() {
       const mat4 = GLMWasm.Matrix4.create();
@@ -378,6 +378,24 @@ const benchmarks = {
     },
     [names[4]]() {
       m40.scale(v40);
+    },
+  },
+  clone: {
+    [names[0]]() {
+      m00.clone();
+    },
+    [names[1]]() {
+      const out = GLMWasm.Matrix4.clone(m10);
+      out.free();
+    },
+    [names[2]]() {
+      GLM.mat4.clone(m20);
+    },
+    [names[3]]() {
+      m30.clone();
+    },
+    [names[4]]() {
+      m40.clone();
     },
   },
 };

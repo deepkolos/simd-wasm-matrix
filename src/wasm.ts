@@ -1,11 +1,14 @@
 interface WasmExports {
-  matrix4_multiply(left: number, right: number, out: number): void;
-  matrix4_determinant(ptr: number): number;
-  matrix4_invert(ptr: number): void;
-  matrix4_invert_transform(ptr: number): void;
-  matrix4_transpose(ptr: number): void;
-  matrix4_multiply_scalar(ptr: number, v: number): void;
-  matrix4_scale(ptr: number, vector3Ptr: number): void;
+  matrix4_multiply(): void;
+  matrix4_determinant(): number;
+  matrix4_invert(): void;
+  matrix4_invert_transform(): void;
+  matrix4_transpose(): void;
+  matrix4_multiply_scalar(v: number): void;
+  getIn0Ptr(): number;
+  getIn1Ptr(): number;
+  getOutPtr(): number;
+  // matrix4_scale(vector3Ptr: number): void;
   // malloc(size: number): number;
   // free(ptr: number): void;
   memory: WebAssembly.Memory;
@@ -22,6 +25,9 @@ export let wasmExports: WasmExports;
 export let wasmMemory: WebAssembly.Memory;
 export let wasmMemoryBuffer: ArrayBuffer;
 export let storeDataInWasm = false;
+export let matrix4In0View: Float32Array;
+export let matrix4In1View: Float32Array;
+export let matrix4OutView: Float32Array;
 
 /**
  * 所分配heap内存最小未被使用指针            ⬇️
@@ -58,6 +64,9 @@ export async function init({ wasm = '', simdWasm = '', noSIMD = false } = {}): P
     wasmMemory = wasmExports.memory;
     wasmMemoryBuffer = wasmMemory.buffer;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
+    matrix4In0View = new Float32Array(wasmMemoryBuffer, wasmExports.getIn0Ptr(), 16);
+    matrix4In1View = new Float32Array(wasmMemoryBuffer, wasmExports.getIn1Ptr(), 16);
+    matrix4OutView = new Float32Array(wasmMemoryBuffer, wasmExports.getOutPtr(), 16);
   }
 }
 

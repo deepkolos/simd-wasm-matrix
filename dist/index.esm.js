@@ -3,6 +3,9 @@ let wasmExports;
 let wasmMemory;
 let wasmMemoryBuffer;
 let storeDataInWasm = false;
+let matrix4In0View;
+let matrix4In1View;
+let matrix4OutView;
 
 /**
  * 所分配heap内存最小未被使用指针            ⬇️
@@ -39,6 +42,9 @@ async function init({ wasm = '', simdWasm = '', noSIMD = false } = {}) {
     wasmMemory = wasmExports.memory;
     wasmMemoryBuffer = wasmMemory.buffer;
     allocedMemoryTailPointer = wasmExports.__heap_base.value;
+    matrix4In0View = new Float32Array(wasmMemoryBuffer, wasmExports.getIn0Ptr(), 16);
+    matrix4In1View = new Float32Array(wasmMemoryBuffer, wasmExports.getIn1Ptr(), 16);
+    matrix4OutView = new Float32Array(wasmMemoryBuffer, wasmExports.getOutPtr(), 16);
   }
 }
 
@@ -101,55 +107,73 @@ const wasmRegistry = new FinalizationRegistry((ptr) => {
 });
 
 class Matrix4 {
-   __init() {this.isMatrix4 = true;}
   
   
-   __init2() {this._disposed = false;}
 
-  constructor() {Matrix4.prototype.__init.call(this);Matrix4.prototype.__init2.call(this);
-    this.ptr = malloc(16 * 4);
-    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
-    this.identity();
-    wasmRegistry.register(this, this.ptr);
+  constructor() {
+    this.isMatrix4 = true;
+    this.elements = new Float32Array(16);
+    this.elements[0] = 1;
+    this.elements[5] = 1;
+    this.elements[10] = 1;
+    this.elements[15] = 1;
   }
 
   // --------- operation ---------
 
   multiply(mat) {
-    wasmExports.matrix4_multiply(this.ptr, mat.ptr, this.ptr);
+    // matrix4In0View.set(this.elements, 0);
+    // matrix4In1View.set(mat.elements, 0);
+    wasmExports.matrix4_multiply();
+    // this.elements.set(matrix4OutView, 0);
     return this;
   }
   premultiply(mat) {
-    wasmExports.matrix4_multiply(mat.ptr, this.ptr, this.ptr);
+    matrix4In0View.set(mat.elements, 0);
+    matrix4In1View.set(this.elements, 0);
+    wasmExports.matrix4_multiply();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   multiplyMatrices(a, b) {
-    wasmExports.matrix4_multiply(a.ptr, b.ptr, this.ptr);
+    // matrix4In0View.set(a.elements, 0);
+    // matrix4In1View.set(b.elements, 0);
+    wasmExports.matrix4_multiply();
+    // this.elements.set(matrix4OutView, 0);
     return this;
   }
   multiplyScalar(s) {
-    wasmExports.matrix4_multiply_scalar(this.ptr, s);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_multiply_scalar(s);
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
 
   determinant() {
-    return wasmExports.matrix4_determinant(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    return wasmExports.matrix4_determinant();
   }
   transpose() {
-    wasmExports.matrix4_transpose(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_transpose();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   invert() {
-    wasmExports.matrix4_invert(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_invert();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   invertTransform() {
-    wasmExports.matrix4_invert_transform(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_invert_transform();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
 
   scale(v) {
-    wasmExports.matrix4_scale(this.ptr, v.ptr);
+    // wasmExports.matrix4_scale(this.ptr, v.ptr);
     return this;
   }
 
@@ -196,13 +220,6 @@ class Matrix4 {
   }
 
   // --------- getter setter ---------
-
-  get elements() {
-    if (!this._elements.length) {
-      this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
-    }
-    return this._elements;
-  }
 
   // prettier-ignore
   set(
@@ -640,15 +657,6 @@ class Matrix4 {
 
     return this;
   }
-
-  // 支持手动提前释放C++侧内存
-  dispose() {
-    if (!this._disposed) {
-      wasmRegistry.unregister(this);
-      free(this.ptr);
-      this._disposed = true;
-    }
-  }
 }
 
 class Vector3 {
@@ -755,11 +763,6 @@ class Vector4 {
   }
 }
 
-/**
- * covert three matrix4 to wasm
- * @param {*} Matrix4Ctor 
- * @returns {Matrix4}
- */
 function convertTHREEMatrix4(Matrix4Ctor) {
   class Matrix4Wasm extends Matrix4Ctor {
     
@@ -844,4 +847,4 @@ function convertTHREEMatrix4(Matrix4Ctor) {
   return Matrix4Wasm ;
 }
 
-export { Matrix4, Vector3, Vector4, convertTHREEMatrix4, free, init, instanceSource, malloc, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };
+export { Matrix4, Vector3, Vector4, convertTHREEMatrix4, free, init, instanceSource, malloc, matrix4In0View, matrix4In1View, matrix4OutView, storeDataInWasm, wasmExports, wasmMemory, wasmMemoryBuffer, wasmRegistry };

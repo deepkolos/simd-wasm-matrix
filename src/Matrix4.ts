@@ -1,56 +1,74 @@
 import { Vector3 } from './Vector3';
-import { malloc, wasmExports, wasmRegistry, free, wasmMemoryBuffer } from './wasm';
+import { matrix4In0View, matrix4In1View, matrix4OutView, wasmExports } from './wasm';
 
 export class Matrix4 {
-  public isMatrix4 = true;
-  public ptr: number;
-  private _elements: Float32Array;
-  private _disposed = false;
+  public isMatrix4: boolean;
+  public elements: Float32Array;
 
   constructor() {
-    this.ptr = malloc(16 * 4);
-    this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
-    this.identity();
-    wasmRegistry.register(this, this.ptr);
+    this.isMatrix4 = true;
+    this.elements = new Float32Array(16);
+    this.elements[0] = 1;
+    this.elements[5] = 1;
+    this.elements[10] = 1;
+    this.elements[15] = 1;
   }
 
   // --------- operation ---------
 
   multiply(mat: Matrix4): this {
-    wasmExports.matrix4_multiply(this.ptr, mat.ptr, this.ptr);
+    // matrix4In0View.set(this.elements, 0);
+    // matrix4In1View.set(mat.elements, 0);
+    wasmExports.matrix4_multiply();
+    // this.elements.set(matrix4OutView, 0);
     return this;
   }
   premultiply(mat: Matrix4): this {
-    wasmExports.matrix4_multiply(mat.ptr, this.ptr, this.ptr);
+    matrix4In0View.set(mat.elements, 0);
+    matrix4In1View.set(this.elements, 0);
+    wasmExports.matrix4_multiply();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   multiplyMatrices(a: Matrix4, b: Matrix4): this {
-    wasmExports.matrix4_multiply(a.ptr, b.ptr, this.ptr);
+    // matrix4In0View.set(a.elements, 0);
+    // matrix4In1View.set(b.elements, 0);
+    wasmExports.matrix4_multiply();
+    // this.elements.set(matrix4OutView, 0);
     return this;
   }
   multiplyScalar(s: number) {
-    wasmExports.matrix4_multiply_scalar(this.ptr, s);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_multiply_scalar(s);
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
 
   determinant(): number {
-    return wasmExports.matrix4_determinant(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    return wasmExports.matrix4_determinant();
   }
   transpose(): this {
-    wasmExports.matrix4_transpose(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_transpose();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   invert(): this {
-    wasmExports.matrix4_invert(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_invert();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
   invertTransform(): this {
-    wasmExports.matrix4_invert_transform(this.ptr);
+    matrix4In0View.set(this.elements, 0);
+    wasmExports.matrix4_invert_transform();
+    this.elements.set(matrix4OutView, 0);
     return this;
   }
 
   scale(v: Vector3) {
-    wasmExports.matrix4_scale(this.ptr, v.ptr);
+    // wasmExports.matrix4_scale(this.ptr, v.ptr);
     return this;
   }
 
@@ -97,13 +115,6 @@ export class Matrix4 {
   }
 
   // --------- getter setter ---------
-
-  get elements(): Float32Array {
-    if (!this._elements.length) {
-      this._elements = new Float32Array(wasmMemoryBuffer, this.ptr, 16);
-    }
-    return this._elements;
-  }
 
   // prettier-ignore
   set(
@@ -540,14 +551,5 @@ export class Matrix4 {
     // scale.z = sz;
 
     return this;
-  }
-
-  // 支持手动提前释放C++侧内存
-  dispose() {
-    if (!this._disposed) {
-      wasmRegistry.unregister(this);
-      free(this.ptr);
-      this._disposed = true;
-    }
   }
 }

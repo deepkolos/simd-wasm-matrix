@@ -1,26 +1,30 @@
 (module
  (type $i32_=>_none (func (param i32)))
+ (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
  (type $i32_i32_=>_none (func (param i32 i32)))
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_f32_=>_none (func (param i32 f32)))
  (type $i32_=>_f32 (func (param i32) (result f32)))
  (global $global$0 i32 (i32.const 1024))
- (global $global$1 i32 (i32.const 1024))
+ (global $global$1 i32 (i32.const 1216))
  (global $global$2 i32 (i32.const 1024))
- (global $global$3 i32 (i32.const 66560))
+ (global $global$3 i32 (i32.const 66752))
  (global $global$4 i32 (i32.const 0))
  (global $global$5 i32 (i32.const 1))
  (memory $0 2)
  (export "memory" (memory $0))
  (export "__wasm_call_ctors" (func $0))
- (export "matrix4_multiply" (func $1))
- (export "matrix4_determinant" (func $2))
- (export "matrix4_invert" (func $3))
- (export "matrix4_invert_transform" (func $4))
- (export "matrix4_transpose" (func $5))
- (export "matrix4_multiply_scalar" (func $6))
- (export "matrix4_scale" (func $7))
+ (export "getIn0Ptr" (func $1))
+ (export "getIn1Ptr" (func $2))
+ (export "getOutPtr" (func $3))
+ (export "matrix4_multiply" (func $4))
+ (export "matrix4_determinant" (func $5))
+ (export "matrix4_invert" (func $6))
+ (export "matrix4_invert_transform" (func $7))
+ (export "matrix4_transpose" (func $8))
+ (export "matrix4_multiply_scalar" (func $9))
+ (export "matrix4_scale" (func $10))
  (export "__dso_handle" (global $global$0))
  (export "__data_end" (global $global$1))
  (export "__global_base" (global $global$2))
@@ -30,7 +34,16 @@
  (func $0
   (nop)
  )
- (func $1 (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $1 (result i32)
+  (i32.const 1024)
+ )
+ (func $2 (result i32)
+  (i32.const 1088)
+ )
+ (func $3 (result i32)
+  (i32.const 1152)
+ )
+ (func $4 (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 f32)
   (local $4 f32)
   (local $5 f32)
@@ -592,7 +605,7 @@
    )
   )
  )
- (func $2 (param $0 i32) (result f32)
+ (func $5 (param $0 i32) (result f32)
   (local $1 f32)
   (local $2 f32)
   (local $3 f32)
@@ -813,7 +826,7 @@
    )
   )
  )
- (func $3 (param $0 i32)
+ (func $6 (param $0 i32)
   (local $1 f32)
   (local $2 f32)
   (local $3 f32)
@@ -1440,7 +1453,7 @@
    )
   )
  )
- (func $4 (param $0 i32)
+ (func $7 (param $0 i32)
   (local $1 f32)
   (local $2 f32)
   (local $3 f32)
@@ -1733,7 +1746,7 @@
    )
   )
  )
- (func $5 (param $0 i32)
+ (func $8 (param $0 i32)
   (local $1 f32)
   (local.set $1
    (f32.load offset=16
@@ -1826,7 +1839,7 @@
    (local.get $1)
   )
  )
- (func $6 (param $0 i32) (param $1 f32)
+ (func $9 (param $0 i32) (param $1 f32)
   (f32.store
    (local.get $0)
    (f32.mul
@@ -1972,7 +1985,7 @@
    )
   )
  )
- (func $7 (param $0 i32) (param $1 i32)
+ (func $10 (param $0 i32) (param $1 i32)
   (f32.store
    (local.get $0)
    (f32.mul
@@ -2106,11 +2119,11 @@
    )
   )
  )
- ;; custom section ".debug_info", size 1876
+ ;; custom section ".debug_info", size 2123
  ;; custom section ".debug_loc", size 4226
- ;; custom section ".debug_ranges", size 64
- ;; custom section ".debug_abbrev", size 180
- ;; custom section ".debug_line", size 47
- ;; custom section ".debug_str", size 787
+ ;; custom section ".debug_ranges", size 88
+ ;; custom section ".debug_abbrev", size 322
+ ;; custom section ".debug_line", size 132
+ ;; custom section ".debug_str", size 890
  ;; custom section "producers", size 52
 )

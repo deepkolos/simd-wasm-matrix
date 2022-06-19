@@ -2,6 +2,39 @@
 
 // -------------- Matrix4 --------------
 
+struct __attribute__((aligned(16))) Matrix4 {
+  union {
+    float elements[16];
+    v128_t v128[4];
+    // struct {
+    //   float m00;
+    //   float m01;
+    //   float m02;
+    //   float m03;
+    //   float m10;
+    //   float m11;
+    //   float m12;
+    //   float m13;
+    //   float m20;
+    //   float m21;
+    //   float m22;
+    //   float m23;
+    //   float m30;
+    //   float m31;
+    //   float m32;
+    //   float m33;
+    // };
+  };
+};
+
+static struct Matrix4 matrix4_in0;
+static struct Matrix4 matrix4_in1;
+static struct Matrix4 matrix4_out;
+
+void *getIn0Ptr() { return &matrix4_in0; }
+void *getIn1Ptr() { return &matrix4_in1; }
+void *getOutPtr() { return &matrix4_out; }
+
 #ifdef __SIMD__
 
 static __inline__ v128_t wasm_f32x4_dot_xyzw(v128_t a, v128_t b) {
@@ -20,11 +53,16 @@ static __inline__ v128_t wasm_f32x4_dot_xy__(v128_t a, v128_t b) {
   return aaaa;
 }
 
-void matrix4_multiply(float const a[16], float const b[16], float out[16]) {
-  v128_t a_col_0 = wasm_v128_load(a);
-  v128_t a_col_1 = wasm_v128_load(a + 4);
-  v128_t a_col_2 = wasm_v128_load(a + 8);
-  v128_t a_col_3 = wasm_v128_load(a + 12);
+void matrix4_multiply() {
+  // v128_t a_col_0 = wasm_v128_load(a);
+  // v128_t a_col_1 = wasm_v128_load(a + 4);
+  // v128_t a_col_2 = wasm_v128_load(a + 8);
+  // v128_t a_col_3 = wasm_v128_load(a + 12);
+  float *b = matrix4_in1.elements;
+  v128_t a_col_0 = matrix4_in0.v128[0];
+  v128_t a_col_1 = matrix4_in0.v128[1];
+  v128_t a_col_2 = matrix4_in0.v128[2];
+  v128_t a_col_3 = matrix4_in0.v128[3];
 
   v128_t o_col_0 = wasm_f32x4_add(
       wasm_f32x4_add(
@@ -51,21 +89,26 @@ void matrix4_multiply(float const a[16], float const b[16], float out[16]) {
           wasm_f32x4_mul(wasm_f32x4_splat(b[14]), a_col_2)),
       wasm_f32x4_mul(wasm_f32x4_splat(b[15]), a_col_3));
 
-  wasm_v128_store(out, o_col_0);
-  wasm_v128_store(out + 4, o_col_1);
-  wasm_v128_store(out + 8, o_col_2);
-  wasm_v128_store(out + 12, o_col_3);
+  // wasm_v128_store(out, o_col_0);
+  // wasm_v128_store(out + 4, o_col_1);
+  // wasm_v128_store(out + 8, o_col_2);
+  // wasm_v128_store(out + 12, o_col_3);
+  matrix4_out.v128[0] = o_col_0;
+  matrix4_out.v128[1] = o_col_1;
+  matrix4_out.v128[2] = o_col_2;
+  matrix4_out.v128[3] = o_col_3;
 }
 
-float matrix4_determinant(v128_t const a_[4]) {
+float matrix4_determinant() {
   // float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
   // float a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
   // float a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
   // float a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
-  v128_t a0_ = a_[0];
-  v128_t a1_ = a_[1];
-  v128_t a2_ = a_[2];
-  v128_t a3_ = a_[3];
+
+  v128_t a0_ = matrix4_in0.v128[0];
+  v128_t a1_ = matrix4_in0.v128[1];
+  v128_t a2_ = matrix4_in0.v128[2];
+  v128_t a3_ = matrix4_in0.v128[3];
 
   // v128_t a0_ = wasm_v128_load(a);
   // v128_t a1_ = wasm_v128_load(a + 4);
@@ -122,7 +165,7 @@ float matrix4_determinant(v128_t const a_[4]) {
   return wasm_f32x4_extract_lane(v_det, 0);
 }
 
-void matrix4_invert(v128_t a_[4]) {
+void matrix4_invert() {
   // float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
   // float a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
   // float a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
@@ -132,10 +175,10 @@ void matrix4_invert(v128_t a_[4]) {
   // v128_t a1_ = wasm_v128_load(a + 4);
   // v128_t a2_ = wasm_v128_load(a + 8);
   // v128_t a3_ = wasm_v128_load(a + 12);
-  v128_t a0_ = a_[0];
-  v128_t a1_ = a_[1];
-  v128_t a2_ = a_[2];
-  v128_t a3_ = a_[3];
+  v128_t a0_ = matrix4_in0.v128[0];
+  v128_t a1_ = matrix4_in0.v128[1];
+  v128_t a2_ = matrix4_in0.v128[2];
+  v128_t a3_ = matrix4_in0.v128[3];
 
   // 出奇的有规律的一般都是好算法...
   v128_t l0, l1, l2, r0, r1, r2, r;
@@ -288,25 +331,30 @@ void matrix4_invert(v128_t a_[4]) {
   // wasm_v128_store(a + 4, n2_);
   // wasm_v128_store(a + 8, n3_);
   // wasm_v128_store(a + 12, n4_);
-  a_[0] = n1_;
-  a_[1] = n2_;
-  a_[2] = n3_;
-  a_[3] = n4_;
+  matrix4_out.v128[0] = n1_;
+  matrix4_out.v128[1] = n2_;
+  matrix4_out.v128[2] = n3_;
+  matrix4_out.v128[3] = n4_;
 }
 
-void matrix4_transpose(v128_t a[4]) {
-  v128_t tmp0 = wasm_i32x4_shuffle(a[0], a[1], 0, 4, 1, 5);
-  v128_t tmp2 = wasm_i32x4_shuffle(a[0], a[1], 2, 6, 3, 7);
-  v128_t tmp1 = wasm_i32x4_shuffle(a[2], a[3], 0, 4, 1, 5);
-  v128_t tmp3 = wasm_i32x4_shuffle(a[2], a[3], 2, 6, 3, 7);
-  a[0] = wasm_i32x4_shuffle(tmp0, tmp1, 0, 1, 4, 5);
-  a[1] = wasm_i32x4_shuffle(tmp0, tmp1, 2, 3, 6, 7);
-  a[2] = wasm_i32x4_shuffle(tmp2, tmp3, 0, 1, 4, 5);
-  a[3] = wasm_i32x4_shuffle(tmp2, tmp3, 2, 3, 6, 7);
+void matrix4_transpose() {
+  v128_t tmp0 =
+      wasm_i32x4_shuffle(matrix4_in0.v128[0], matrix4_in0.v128[1], 0, 4, 1, 5);
+  v128_t tmp2 =
+      wasm_i32x4_shuffle(matrix4_in0.v128[0], matrix4_in0.v128[1], 2, 6, 3, 7);
+  v128_t tmp1 =
+      wasm_i32x4_shuffle(matrix4_in0.v128[2], matrix4_in0.v128[3], 0, 4, 1, 5);
+  v128_t tmp3 =
+      wasm_i32x4_shuffle(matrix4_in0.v128[2], matrix4_in0.v128[3], 2, 6, 3, 7);
+  matrix4_in0.v128[0] = wasm_i32x4_shuffle(tmp0, tmp1, 0, 1, 4, 5);
+  matrix4_in0.v128[1] = wasm_i32x4_shuffle(tmp0, tmp1, 2, 3, 6, 7);
+  matrix4_in0.v128[2] = wasm_i32x4_shuffle(tmp2, tmp3, 0, 1, 4, 5);
+  matrix4_in0.v128[3] = wasm_i32x4_shuffle(tmp2, tmp3, 2, 3, 6, 7);
 }
 
-void matrix4_invert_transform(v128_t a[4]) {
+void matrix4_invert_transform() {
   // 5,7,11 均为0
+  v128_t *a = matrix4_in0.v128;
 
   // 旋转3x3矩阵转置
   v128_t t0 = wasm_i32x4_shuffle(a[0], a[1], 0, 1, 4, 5);
@@ -340,7 +388,8 @@ void matrix4_invert_transform(v128_t a[4]) {
   a[3] = wasm_f32x4_sub(wasm_f32x4_make(0, 0, 0, 1), a[3]);
 }
 
-void matrix4_multiply_scalar(v128_t a[4], float const b) {
+void matrix4_multiply_scalar(float const b) {
+  v128_t *a = matrix4_in0.v128;
   v128_t vB = wasm_f32x4_splat(b);
   a[0] = wasm_f32x4_mul(a[0], vB);
   a[1] = wasm_f32x4_mul(a[1], vB);
